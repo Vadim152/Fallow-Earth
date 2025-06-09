@@ -14,11 +14,14 @@ public class Colonist : MonoBehaviour
     private int pathIndex;
     private Rigidbody2D rb;
     private bool wandering;
+    private float actionTimer;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         rb.gravityScale = 0f;
+
+        actionTimer = 0f;
 
         if (GetComponent<SpriteRenderer>() == null)
         {
@@ -70,8 +73,30 @@ public class Colonist : MonoBehaviour
         if (path == null || pathIndex >= path.Count)
         {
             if (!wandering && currentTask != null)
-                currentTask.Complete(this);
-            currentTask = null;
+            {
+                if (currentTask is TimedTask timed)
+                {
+                    if (actionTimer <= 0f)
+                        actionTimer = timed.duration;
+                    actionTimer -= Time.deltaTime;
+                    if (actionTimer <= 0f)
+                    {
+                        actionTimer = 0f;
+                        currentTask.Complete(this);
+                        currentTask = null;
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }
+                else
+                {
+                    currentTask.Complete(this);
+                    currentTask = null;
+                }
+            }
+
             if (wandering)
                 wandering = false;
             return;
