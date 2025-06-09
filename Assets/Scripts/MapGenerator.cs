@@ -120,6 +120,16 @@ public class MapGenerator : MonoBehaviour
         return treeTilemap.GetTile(new Vector3Int(x, y, 0)) != null;
     }
 
+    public void HighlightTree(int x, int y, Color tint)
+    {
+        if (treeTilemap == null || x < 0 || x >= width || y < 0 || y >= height)
+            return;
+
+        Vector3Int pos = new Vector3Int(x, y, 0);
+        treeTilemap.SetTileFlags(pos, TileFlags.None);
+        treeTilemap.SetColor(pos, tint);
+    }
+
     public void RemoveTree(int x, int y)
     {
         if (treeTilemap == null || x < 0 || x >= width || y < 0 || y >= height)
