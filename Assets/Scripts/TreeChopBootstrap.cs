@@ -5,8 +5,11 @@ public static class TreeChopBootstrap
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void Init()
     {
-        if (Object.FindObjectOfType<TreeChopController>() != null)
+        var controllerType = System.Type.GetType("TreeChopController");
+        if (controllerType == null)
             return;
-        new GameObject("TreeChopController").AddComponent<TreeChopController>();
+        if (Object.FindObjectOfType(controllerType) != null)
+            return;
+        new GameObject("TreeChopController").AddComponent(controllerType);
     }
 }
