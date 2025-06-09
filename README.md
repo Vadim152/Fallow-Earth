@@ -37,7 +37,9 @@ A simple chopping tool is available via the `TreeChopController` script. When th
 
 A small bootstrap script named `CameraBootstrap` forces portrait orientation on startup and sets the main camera's aspect ratio to 9:16. This ensures the project runs correctly on mobile devices.
 
-amera Swipe and Zoom
+## Camera Controls
 
 Attach the `CameraPanZoomController` script to the main camera to enable mobile-style controls. Swipe with one finger to move around and pinch with two fingers to zoom. The camera position is clamped to the map so it cannot be dragged outside the generated area.
+
+For simple drag panning without zooming, use the `CameraDragController` script. Hold the left mouse button or touch the screen with one finger and move to pan the view, just like dragging a photo around.
 
