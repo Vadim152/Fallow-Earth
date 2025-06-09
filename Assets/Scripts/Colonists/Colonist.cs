@@ -5,7 +5,7 @@ using UnityEngine;
 [RequireComponent(typeof(BoxCollider2D))]
 public class Colonist : MonoBehaviour
 {
-    public float moveSpeed = 2f;
+    public float moveSpeed = 10f;
 
     private Task currentTask;
     private TaskManager taskManager;
