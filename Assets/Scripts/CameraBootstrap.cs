@@ -10,6 +10,8 @@ public static class CameraBootstrap
         if (cam != null)
         {
             cam.aspect = 9f / 16f;
+            if (cam.GetComponent<CameraPanZoomController>() == null)
+                cam.gameObject.AddComponent<CameraPanZoomController>();
         }
     }
 }
