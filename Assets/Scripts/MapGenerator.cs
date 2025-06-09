@@ -4,16 +4,16 @@ using UnityEngine.Tilemaps;
 public class MapGenerator : MonoBehaviour
 {
     public Tilemap groundTilemap;
-    public Tilemap obstacleTilemap;
+    public Tilemap treeTilemap;
 
     public Color grassColor = new Color(0.2f, 0.6f, 0.2f);
     public Color waterColor = new Color(0.2f, 0.2f, 0.7f);
     public Color mountainColor = Color.gray;
-    public Color obstacleColor = new Color(0.25f, 0.2f, 0.1f);
+    public Color treeColor = new Color(0.25f, 0.2f, 0.1f);
     public int width = 50;
     public int height = 50;
     [Range(0f,1f)]
-    public float obstacleProbability = 0.1f;
+    public float treeProbability = 0.1f;
 
     [Header("Noise Settings")]
     public float noiseScale = 0.1f;
@@ -25,13 +25,13 @@ public class MapGenerator : MonoBehaviour
     private TileBase groundTile;
     private TileBase waterTile;
     private TileBase mountainTile;
-    private TileBase obstacleTile;
+    private TileBase treeTile;
 
     private bool[,] passable;
 
     void Awake()
     {
-        if (groundTilemap == null || obstacleTilemap == null)
+        if (groundTilemap == null || treeTilemap == null)
         {
             var gridObj = new GameObject("Grid");
             var grid = gridObj.AddComponent<Grid>();
@@ -41,14 +41,14 @@ public class MapGenerator : MonoBehaviour
             groundTilemap = groundObj.AddComponent<Tilemap>();
             groundObj.AddComponent<TilemapRenderer>();
 
-            var obstacleObj = new GameObject("Obstacles");
-            obstacleObj.transform.parent = gridObj.transform;
-            obstacleTilemap = obstacleObj.AddComponent<Tilemap>();
-            obstacleObj.AddComponent<TilemapRenderer>();
+            var treeObj = new GameObject("Trees");
+            treeObj.transform.parent = gridObj.transform;
+            treeTilemap = treeObj.AddComponent<Tilemap>();
+            treeObj.AddComponent<TilemapRenderer>();
         }
 
         groundTile = CreateColoredTile(grassColor);
-        obstacleTile = CreateColoredTile(obstacleColor);
+        treeTile = CreateColoredTile(treeColor);
         waterTile = CreateColoredTile(waterColor);
         mountainTile = CreateColoredTile(mountainColor);
     }
@@ -64,8 +64,8 @@ public class MapGenerator : MonoBehaviour
         passable = new bool[width, height];
         if (groundTilemap != null)
             groundTilemap.ClearAllTiles();
-        if (obstacleTilemap != null)
-            obstacleTilemap.ClearAllTiles();
+        if (treeTilemap != null)
+            treeTilemap.ClearAllTiles();
 
         Vector2 noiseOffset = new Vector2(Random.Range(0f, 1000f), Random.Range(0f, 1000f));
 
@@ -96,10 +96,10 @@ public class MapGenerator : MonoBehaviour
                 if (groundTilemap != null)
                     groundTilemap.SetTile(pos, tile);
 
-                if (passable[x, y] && Random.value < obstacleProbability)
+                if (passable[x, y] && Random.value < treeProbability)
                 {
-                    if (obstacleTilemap != null && obstacleTile != null)
-                        obstacleTilemap.SetTile(pos, obstacleTile);
+                    if (treeTilemap != null && treeTile != null)
+                        treeTilemap.SetTile(pos, treeTile);
                     passable[x, y] = false;
                 }
             }
