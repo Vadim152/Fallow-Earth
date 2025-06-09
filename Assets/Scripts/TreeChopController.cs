@@ -7,6 +7,8 @@ public class TreeChopController : MonoBehaviour
     private TaskManager taskManager;
     private bool selecting;
     private Image buttonImage;
+    private RectTransform buttonRect;
+    private Coroutine animRoutine;
     [Tooltip("How long a colonist spends chopping a tree")] public float chopTime = 1f;
 
     void Start()
@@ -36,7 +38,8 @@ public class TreeChopController : MonoBehaviour
         btn.targetGraphic = buttonImage;
         btn.onClick.AddListener(ToggleSelecting);
 
-        RectTransform rt = buttonObj.GetComponent<RectTransform>();
+        buttonRect = buttonObj.GetComponent<RectTransform>();
+        RectTransform rt = buttonRect;
         rt.anchorMin = new Vector2(0f, 0f);
         rt.anchorMax = new Vector2(0f, 0f);
         rt.pivot = new Vector2(0f, 0f);
@@ -62,6 +65,28 @@ public class TreeChopController : MonoBehaviour
         selecting = !selecting;
         if (buttonImage != null)
             buttonImage.color = selecting ? new Color(0.6f, 1f, 0.6f, 0.9f) : new Color(0.8f, 0.8f, 0.8f, 0.9f);
+        if (buttonRect != null)
+        {
+            if (animRoutine != null)
+                StopCoroutine(animRoutine);
+            animRoutine = StartCoroutine(PressAnimation(selecting));
+        }
+    }
+
+    System.Collections.IEnumerator PressAnimation(bool pressed)
+    {
+        if (buttonRect == null)
+            yield break;
+        Vector3 start = buttonRect.localScale;
+        Vector3 target = pressed ? new Vector3(0.9f, 0.9f, 0.9f) : Vector3.one;
+        float time = 0f;
+        while (time < 0.1f)
+        {
+            time += Time.unscaledDeltaTime;
+            buttonRect.localScale = Vector3.Lerp(start, target, time / 0.1f);
+            yield return null;
+        }
+        buttonRect.localScale = target;
     }
 
     void Update()
