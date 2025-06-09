@@ -28,3 +28,7 @@ Two colonists are created automatically when the scene starts. If no tasks are a
 1. Add a `TaskManager` component to an empty GameObject in the scene (this is also done automatically by `ColonistBootstrap`).
 2. Create a new GameObject and attach the `Colonist` script if you want additional colonists.
 3. At runtime use `TaskManager.AddTask(new Task(targetPosition))` to send a colonist somewhere.
+
+## Tree Chopping
+
+A simple chopping tool is available via the `TreeChopController` script. When the game starts a button labeled **Chop Trees** is created on the UI. Toggle the button and click on any tree tile to designate it for chopping. Free colonists will automatically receive tasks to move to the tree and remove it.

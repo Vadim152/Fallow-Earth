@@ -113,6 +113,23 @@ public class MapGenerator : MonoBehaviour
         return passable[x, y];
     }
 
+    public bool HasTree(int x, int y)
+    {
+        if (treeTilemap == null || x < 0 || x >= width || y < 0 || y >= height)
+            return false;
+        return treeTilemap.GetTile(new Vector3Int(x, y, 0)) != null;
+    }
+
+    public void RemoveTree(int x, int y)
+    {
+        if (treeTilemap == null || x < 0 || x >= width || y < 0 || y >= height)
+            return;
+
+        treeTilemap.SetTile(new Vector3Int(x, y, 0), null);
+        if (passable != null && x < passable.GetLength(0) && y < passable.GetLength(1))
+            passable[x, y] = true;
+    }
+
     private Tile CreateColoredTile(Color color)
     {
         Texture2D tex = new Texture2D(1, 1);
