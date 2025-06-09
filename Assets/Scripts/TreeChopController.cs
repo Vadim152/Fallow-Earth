@@ -48,7 +48,7 @@ public class TreeChopController : MonoBehaviour
         Text txt = textObj.AddComponent<Text>();
         txt.text = "\u0421\u0440\u0443\u0431\u0438\u0442\u044C"; // "Срубить"
         txt.alignment = TextAnchor.MiddleCenter;
-        txt.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+        txt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         txt.color = Color.black;
         RectTransform trt = textObj.GetComponent<RectTransform>();
         trt.anchorMin = Vector2.zero;
