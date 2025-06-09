@@ -33,6 +33,8 @@ Two colonists are created automatically when the scene starts. If no tasks are a
 
 A simple chopping tool is available via the `TreeChopController` script. When the game starts a button labeled **Срубить** is created on the UI. Toggle the button and click on any tree tile to designate it for chopping. Free colonists will automatically receive tasks to move to the tree and remove it.
 
+Chopped trees now drop a small `WoodLog` object at their position, showing that resources can be gathered from the environment.
+
 ## Mobile Camera Orientation
 
 A small bootstrap script named `CameraBootstrap` forces portrait orientation on startup, enforces a 9:16 aspect ratio with letterboxing and automatically adds the `CameraPanZoomController` component if it is missing. This prevents stretching on wide displays and ensures the project runs correctly on mobile devices.
