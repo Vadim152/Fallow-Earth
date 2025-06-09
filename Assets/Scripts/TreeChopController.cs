@@ -7,6 +7,7 @@ public class TreeChopController : MonoBehaviour
     private TaskManager taskManager;
     private bool selecting;
     private Image buttonImage;
+    [Tooltip("How long a colonist spends chopping a tree")] public float chopTime = 1f;
 
     void Start()
     {
@@ -77,7 +78,7 @@ public class TreeChopController : MonoBehaviour
             {
                 int tx = x;
                 int ty = y;
-                taskManager.AddTask(new Task(new Vector2(tx + 0.5f, ty + 0.5f), c => map.RemoveTree(tx, ty)));
+                taskManager.AddTask(new ChopTreeTask(new Vector2(tx + 0.5f, ty + 0.5f), chopTime, c => map.RemoveTree(tx, ty)));
             }
         }
     }
