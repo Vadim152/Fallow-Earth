@@ -30,6 +30,14 @@ public class Colonist : MonoBehaviour
         taskManager = FindObjectOfType<TaskManager>();
     }
 
+    void Start()
+    {
+        if (map == null)
+            map = FindObjectOfType<MapGenerator>();
+        if (taskManager == null)
+            taskManager = FindObjectOfType<TaskManager>();
+    }
+
     void Update()
     {
         if (currentTask == null)
