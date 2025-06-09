@@ -128,6 +128,8 @@ public class MapGenerator : MonoBehaviour
         treeTilemap.SetTile(new Vector3Int(x, y, 0), null);
         if (passable != null && x < passable.GetLength(0) && y < passable.GetLength(1))
             passable[x, y] = true;
+
+        WoodLog.Create(new Vector2(x + 0.5f, y + 0.5f));
     }
 
     private Tile CreateColoredTile(Color color)
