@@ -24,6 +24,7 @@ It requests tasks from a `TaskManager` in the scene and moves using a simple A* 
 Tasks are represented by the `Task` class and queued through `TaskManager`.
 
 ### Example
-1. Add a `TaskManager` component to an empty GameObject in the scene.
-2. Create a new GameObject and attach the `Colonist` script.
-3. At runtime use `TaskManager.AddTask(new Task(targetPosition))` to send the colonist somewhere.
+Two colonists are created automatically when the scene starts. If no tasks are available they will wander the map.
+1. Add a `TaskManager` component to an empty GameObject in the scene (this is also done automatically by `ColonistBootstrap`).
+2. Create a new GameObject and attach the `Colonist` script if you want additional colonists.
+3. At runtime use `TaskManager.AddTask(new Task(targetPosition))` to send a colonist somewhere.

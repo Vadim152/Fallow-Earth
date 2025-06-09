@@ -13,6 +13,7 @@ public class Colonist : MonoBehaviour
     private List<Vector2Int> path;
     private int pathIndex;
     private Rigidbody2D rb;
+    private bool wandering;
 
     void Awake()
     {
@@ -34,18 +35,26 @@ public class Colonist : MonoBehaviour
         if (currentTask == null)
         {
             currentTask = taskManager != null ? taskManager.GetNextTask() : null;
+
             if (currentTask != null)
             {
                 path = FindPath(Vector2Int.RoundToInt(transform.position), Vector2Int.RoundToInt(currentTask.target));
                 pathIndex = 0;
+                wandering = false;
             }
-            return;
+            else if (path == null || pathIndex >= path.Count)
+            {
+                StartWander();
+            }
         }
 
         if (path == null || pathIndex >= path.Count)
         {
-            currentTask.Complete(this);
+            if (!wandering && currentTask != null)
+                currentTask.Complete(this);
             currentTask = null;
+            if (wandering)
+                wandering = false;
             return;
         }
 
@@ -134,6 +143,29 @@ public class Colonist : MonoBehaviour
         }
         list.Reverse();
         return list;
+    }
+
+    void StartWander()
+    {
+        if (map == null)
+            return;
+
+        Vector2Int start = Vector2Int.RoundToInt(transform.position);
+        for (int i = 0; i < 20; i++)
+        {
+            int x = Random.Range(0, map.width);
+            int y = Random.Range(0, map.height);
+            if (map.IsPassable(x, y))
+            {
+                path = FindPath(start, new Vector2Int(x, y));
+                if (path.Count > 0)
+                {
+                    pathIndex = 0;
+                    wandering = true;
+                    return;
+                }
+            }
+        }
     }
 
     Sprite CreateColoredSprite(Color color)
