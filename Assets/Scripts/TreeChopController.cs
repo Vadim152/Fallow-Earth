@@ -13,7 +13,8 @@ public class TreeChopController : MonoBehaviour
     private RectTransform buttonRect;
     private Coroutine animRoutine;
     private HashSet<Vector2Int> selectedTrees = new HashSet<Vector2Int>();
-    public Color highlightTint = new Color(1.3f, 1.3f, 1.3f, 1f);
+    // Brighter tint so highlighted trees are more obvious
+    public Color highlightTint = new Color(2f, 2f, 2f, 1f);
     [Tooltip("How long a colonist spends chopping a tree")] public float chopTime = 1f;
 
     void Start()
