@@ -11,7 +11,7 @@ public class CameraTapController : MonoBehaviour
     {
         cam = GetComponent<Camera>();
         Screen.orientation = ScreenOrientation.Portrait;
-        cam.aspect = 9f / 16f;
+        AspectRatioEnforcer.Enforce(cam, 9f / 16f);
         targetPos = cam.transform.position;
     }
 
