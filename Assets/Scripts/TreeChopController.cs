@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using System.Collections.Generic;
+
 
 public class TreeChopController : MonoBehaviour
 {
@@ -10,6 +12,8 @@ public class TreeChopController : MonoBehaviour
     private Image buttonImage;
     private RectTransform buttonRect;
     private Coroutine animRoutine;
+    private HashSet<Vector2Int> selectedTrees = new HashSet<Vector2Int>();
+    public Color highlightTint = new Color(1.3f, 1.3f, 1.3f, 1f);
     [Tooltip("How long a colonist spends chopping a tree")] public float chopTime = 1f;
 
     void Start()
@@ -123,9 +127,19 @@ public class TreeChopController : MonoBehaviour
             int y = Mathf.FloorToInt(world.y);
             if (map.HasTree(x, y))
             {
-                int tx = x;
-                int ty = y;
-                taskManager.AddTask(new ChopTreeTask(new Vector2(tx + 0.5f, ty + 0.5f), chopTime, c => map.RemoveTree(tx, ty)));
+                Vector2Int pos = new Vector2Int(x, y);
+                if (!selectedTrees.Contains(pos))
+                {
+                    selectedTrees.Add(pos);
+                    map.HighlightTree(x, y, highlightTint);
+                    int tx = x;
+                    int ty = y;
+                    taskManager.AddTask(new ChopTreeTask(new Vector2(tx + 0.5f, ty + 0.5f), chopTime, c =>
+                    {
+                        map.RemoveTree(tx, ty);
+                        selectedTrees.Remove(pos);
+                    }));
+                }
             }
         }
     }
