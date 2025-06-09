@@ -157,12 +157,27 @@ public class MapGenerator : MonoBehaviour
 
     private Tile CreateTileFromResource(string name)
     {
+
+        // Try to load a Sprite directly. If the texture was not imported as a
+        // Sprite we attempt to load the Texture2D and create a Sprite at runtime.
         Sprite sprite = Resources.Load<Sprite>("Textures/" + name);
+        if (sprite == null)
+        {
+            Texture2D tex = Resources.Load<Texture2D>("Textures/" + name);
+            if (tex != null)
+            {
+                sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height),
+                    new Vector2(0.5f, 0.5f), 100);
+            }
+        }
+
         if (sprite == null)
         {
             Debug.LogError($"Sprite '{name}' not found in Resources/Textures");
             return CreateColoredTile(Color.magenta);
         }
+
+
         Tile tile = ScriptableObject.CreateInstance<Tile>();
         tile.sprite = sprite;
         tile.colliderType = Tile.ColliderType.None;
