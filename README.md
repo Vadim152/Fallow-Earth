@@ -35,7 +35,7 @@ A simple chopping tool is available via the `TreeChopController` script. When th
 
 ## Mobile Camera Orientation
 
-A small bootstrap script named `CameraBootstrap` forces portrait orientation on startup, sets the main camera's aspect ratio to 9:16 and automatically adds the `CameraPanZoomController` component if it is missing. This ensures the project runs correctly on mobile devices and that the camera can always be dragged around the generated map.
+A small bootstrap script named `CameraBootstrap` forces portrait orientation on startup, enforces a 9:16 aspect ratio with letterboxing and automatically adds the `CameraPanZoomController` component if it is missing. This prevents stretching on wide displays and ensures the project runs correctly on mobile devices.
 
 ## Camera Controls
 
