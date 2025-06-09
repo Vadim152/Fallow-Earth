@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 public class TreeChopController : MonoBehaviour
 {
@@ -28,6 +29,13 @@ public class TreeChopController : MonoBehaviour
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             c.AddComponent<CanvasScaler>();
             c.AddComponent<GraphicRaycaster>();
+        }
+
+        if (FindObjectOfType<EventSystem>() == null)
+        {
+            GameObject es = new GameObject("EventSystem");
+            es.AddComponent<EventSystem>();
+            es.AddComponent<StandaloneInputModule>();
         }
 
         GameObject buttonObj = new GameObject("ChopTreesButton");
