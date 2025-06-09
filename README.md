@@ -31,9 +31,13 @@ Two colonists are created automatically when the scene starts. If no tasks are a
 
 ## Tree Chopping
 
-A simple chopping tool is available via the `TreeChopController` script. When the game starts a button labeled **Chop Trees** is created on the UI. Toggle the button and click on any tree tile to designate it for chopping. Free colonists will automatically receive tasks to move to the tree. Once they arrive they will spend a short time chopping before the tree is removed.
+A simple chopping tool is available via the `TreeChopController` script. When the game starts a button labeled **Chop Trees** is created on the UI. Toggle the button and click on any tree tile to designate it for chopping. Free colonists will automatically receive tasks to move to the tree and remove it.
 
 ## Mobile Camera Orientation
 
 A small bootstrap script named `CameraBootstrap` forces portrait orientation on startup and sets the main camera's aspect ratio to 9:16. This ensures the project runs correctly on mobile devices.
+
+amera Swipe and Zoom
+
+Attach the `CameraPanZoomController` script to the main camera to enable mobile-style controls. Swipe with one finger to move around and pinch with two fingers to zoom. The camera position is clamped to the map so it cannot be dragged outside the generated area.
 
