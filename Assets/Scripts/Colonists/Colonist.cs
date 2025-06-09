@@ -46,7 +46,7 @@ public class Colonist : MonoBehaviour
         currentTask = task;
         if (currentTask != null)
         {
-            path = FindPath(Vector2Int.RoundToInt(transform.position), Vector2Int.RoundToInt(currentTask.target));
+            path = FindPath(Vector2Int.FloorToInt(transform.position), Vector2Int.FloorToInt(currentTask.target));
             pathIndex = 0;
             wandering = false;
         }
@@ -60,7 +60,7 @@ public class Colonist : MonoBehaviour
 
             if (currentTask != null)
             {
-                path = FindPath(Vector2Int.RoundToInt(transform.position), Vector2Int.RoundToInt(currentTask.target));
+                path = FindPath(Vector2Int.FloorToInt(transform.position), Vector2Int.FloorToInt(currentTask.target));
                 pathIndex = 0;
                 wandering = false;
             }
@@ -149,7 +149,7 @@ public class Colonist : MonoBehaviour
             for (int i = 0; i < 4; i++)
             {
                 Vector2Int next = current.pos + new Vector2Int(dirs[i,0], dirs[i,1]);
-                if (closed.Contains(next) || !map.IsPassable(next.x, next.y))
+                if (closed.Contains(next) || (!map.IsPassable(next.x, next.y) && next != goal))
                     continue;
 
                 int g = current.g + 1;
@@ -194,7 +194,7 @@ public class Colonist : MonoBehaviour
         if (map == null)
             return;
 
-        Vector2Int start = Vector2Int.RoundToInt(transform.position);
+        Vector2Int start = Vector2Int.FloorToInt(transform.position);
         for (int i = 0; i < 20; i++)
         {
             int x = Random.Range(0, map.width);
