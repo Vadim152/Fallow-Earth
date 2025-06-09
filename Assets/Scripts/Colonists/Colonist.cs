@@ -38,6 +38,17 @@ public class Colonist : MonoBehaviour
             taskManager = FindObjectOfType<TaskManager>();
     }
 
+    public void SetTask(Task task)
+    {
+        currentTask = task;
+        if (currentTask != null)
+        {
+            path = FindPath(Vector2Int.RoundToInt(transform.position), Vector2Int.RoundToInt(currentTask.target));
+            pathIndex = 0;
+            wandering = false;
+        }
+    }
+
     void Update()
     {
         if (currentTask == null)
