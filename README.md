@@ -31,7 +31,7 @@ Two colonists are created automatically when the scene starts. If no tasks are a
 
 ## Tree Chopping
 
-A simple chopping tool is available via the `TreeChopController` script. When the game starts a button labeled **Срубить** is created on the UI. Toggle the button and click on any tree tile to designate it for chopping. Free colonists will automatically receive tasks to move to the tree and remove it.
+A simple chopping tool is available via the `TreeChopController` script. When the game starts a button labeled **Срубить** is created on the UI. Toggle the button and click or tap on any tree tile to designate it for chopping. Free colonists will automatically receive tasks to move to the tree and remove it.
 
 Chopped trees now drop a small `WoodLog` object at their position, showing that resources can be gathered from the environment.
 

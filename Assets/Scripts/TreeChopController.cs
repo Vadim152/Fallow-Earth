@@ -69,9 +69,23 @@ public class TreeChopController : MonoBehaviour
         if (!selecting || map == null || taskManager == null)
             return;
 
-        if (Input.GetMouseButtonDown(0))
+        bool clicked = false;
+        Vector3 screenPos = Vector3.zero;
+
+        if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
         {
-            Vector3 world = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            clicked = true;
+            screenPos = Input.GetTouch(0).position;
+        }
+        else if (Input.GetMouseButtonDown(0))
+        {
+            clicked = true;
+            screenPos = Input.mousePosition;
+        }
+
+        if (clicked)
+        {
+            Vector3 world = Camera.main.ScreenToWorldPoint(screenPos);
             int x = Mathf.FloorToInt(world.x);
             int y = Mathf.FloorToInt(world.y);
             if (map.HasTree(x, y))
