@@ -37,16 +37,16 @@ public class TreeChopController : MonoBehaviour
         btn.onClick.AddListener(ToggleSelecting);
 
         RectTransform rt = buttonObj.GetComponent<RectTransform>();
-        rt.anchorMin = new Vector2(0f, 1f);
-        rt.anchorMax = new Vector2(0f, 1f);
-        rt.pivot = new Vector2(0f, 1f);
-        rt.anchoredPosition = new Vector2(20f, -20f);
+        rt.anchorMin = new Vector2(0f, 0f);
+        rt.anchorMax = new Vector2(0f, 0f);
+        rt.pivot = new Vector2(0f, 0f);
+        rt.anchoredPosition = new Vector2(20f, 20f);
         rt.sizeDelta = new Vector2(120f, 30f);
 
         GameObject textObj = new GameObject("Text");
         textObj.transform.SetParent(buttonObj.transform, false);
         Text txt = textObj.AddComponent<Text>();
-        txt.text = "Chop Trees";
+        txt.text = "\u0421\u0440\u0443\u0431\u0438\u0442\u044C"; // "Срубить"
         txt.alignment = TextAnchor.MiddleCenter;
         txt.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
         txt.color = Color.black;
