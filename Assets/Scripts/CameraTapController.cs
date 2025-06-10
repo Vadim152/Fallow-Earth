@@ -10,8 +10,8 @@ public class CameraTapController : MonoBehaviour
     void Start()
     {
         cam = GetComponent<Camera>();
-        Screen.orientation = ScreenOrientation.Portrait;
-        AspectRatioEnforcer.Enforce(cam, 9f / 16f);
+        if (cam.GetComponent<CameraAutoFitter>() == null)
+            cam.gameObject.AddComponent<CameraAutoFitter>();
         targetPos = cam.transform.position;
     }
 
