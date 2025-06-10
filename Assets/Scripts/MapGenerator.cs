@@ -31,6 +31,13 @@ public class MapGenerator : MonoBehaviour
     private TileBase zoneTile;
     private Color currentZoneColor;
 
+    /// <summary>
+    /// The color used for the most recently created zone.
+    /// Exposed so other components can create overlays even
+    /// if they cannot place tiles through this generator.
+    /// </summary>
+    public Color CurrentZoneColor => currentZoneColor;
+
     private bool[,] passable;
 
     /// <summary>

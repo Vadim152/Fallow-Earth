@@ -169,23 +169,53 @@ public class AreaSelectionController : MonoBehaviour
         Debug.Log($"Selected area from {startWorld} to {endWorld}");
 
         MapGenerator map = FindObjectOfType<MapGenerator>();
-        if (map == null)
-            return;
+        Color zoneColor;
 
-        map.BeginNewZone();
+        if (map != null)
+        {
+            map.BeginNewZone();
+            zoneColor = map.CurrentZoneColor;
+        }
+        else
+        {
+            zoneColor = GenerateZoneColor();
+        }
 
         int xMin = Mathf.FloorToInt(Mathf.Min(startWorld.x, endWorld.x));
         int xMax = Mathf.FloorToInt(Mathf.Max(startWorld.x, endWorld.x));
         int yMin = Mathf.FloorToInt(Mathf.Min(startWorld.y, endWorld.y));
         int yMax = Mathf.FloorToInt(Mathf.Max(startWorld.y, endWorld.y));
 
+        GameObject zoneGroup = null;
+        if (map == null)
+            zoneGroup = new GameObject("Zone");
+
         for (int x = xMin; x <= xMax; x++)
         {
             for (int y = yMin; y <= yMax; y++)
             {
-                map.SetZone(x, y);
+                if (map != null)
+                {
+                    map.SetZone(x, y);
+                }
+                else
+                {
+                    var overlay = ZoneOverlay.Create(new Vector2(x + 0.5f, y + 0.5f), zoneColor);
+                    if (zoneGroup != null)
+                        overlay.transform.SetParent(zoneGroup.transform);
+                }
             }
         }
+    }
+
+    Color GenerateZoneColor()
+    {
+        float h = Random.value;
+        float s = Random.Range(0.2f, 0.4f);
+        float v = Random.Range(0.4f, 0.6f);
+        Color c = Color.HSVToRGB(h, s, v);
+        c.a = 0.3f;
+        return c;
     }
 
     void ResetSelection()
