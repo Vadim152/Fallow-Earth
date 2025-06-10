@@ -7,6 +7,7 @@ public class AreaSelectionController : MonoBehaviour
     public static bool IsSelecting { get; private set; }
 
     public float holdDelay = 0.3f;
+    public float moveTolerance = 10f;
 
     private Canvas canvas;
     private GameObject boxObj;
@@ -16,6 +17,7 @@ public class AreaSelectionController : MonoBehaviour
     private bool selecting;
     private float holdTimer;
     private Vector2 startScreen;
+    private bool moved;
 
     void Start()
     {
@@ -69,6 +71,7 @@ public class AreaSelectionController : MonoBehaviour
             isHolding = true;
             holdTimer = 0f;
             startScreen = Input.mousePosition;
+            moved = false;
         }
 
         if (isHolding)
@@ -78,7 +81,12 @@ public class AreaSelectionController : MonoBehaviour
             {
                 ResetSelection();
             }
-            else if (!selecting && holdTimer >= holdDelay)
+            else if (!selecting && Vector2.Distance(Input.mousePosition, startScreen) > moveTolerance)
+            {
+                moved = true;
+                ResetSelection();
+            }
+            else if (!selecting && holdTimer >= holdDelay && !moved)
             {
                 selecting = true;
                 IsSelecting = true;
@@ -107,6 +115,7 @@ public class AreaSelectionController : MonoBehaviour
             isHolding = true;
             holdTimer = 0f;
             startScreen = t.position;
+            moved = false;
         }
 
         if (isHolding)
@@ -116,7 +125,12 @@ public class AreaSelectionController : MonoBehaviour
             {
                 ResetSelection();
             }
-            else if (!selecting && holdTimer >= holdDelay)
+            else if (!selecting && Vector2.Distance(t.position, startScreen) > moveTolerance)
+            {
+                moved = true;
+                ResetSelection();
+            }
+            else if (!selecting && holdTimer >= holdDelay && !moved)
             {
                 selecting = true;
                 IsSelecting = true;
@@ -179,6 +193,7 @@ public class AreaSelectionController : MonoBehaviour
         isHolding = false;
         selecting = false;
         IsSelecting = false;
+        moved = false;
         boxObj.SetActive(false);
     }
 }
