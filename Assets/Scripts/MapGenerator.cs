@@ -29,8 +29,29 @@ public class MapGenerator : MonoBehaviour
     private TileBase mountainTile;
     private TileBase treeTile;
     private TileBase zoneTile;
+    private Color currentZoneColor;
 
     private bool[,] passable;
+
+    /// <summary>
+    /// Prepare a new zone tile using a random dim color.
+    /// Call this before placing tiles for a new zone.
+    /// </summary>
+    public void BeginNewZone()
+    {
+        currentZoneColor = GenerateZoneColor();
+        zoneTile = CreateColoredTile(currentZoneColor);
+    }
+
+    private Color GenerateZoneColor()
+    {
+        float h = Random.value;
+        float s = Random.Range(0.2f, 0.4f);
+        float v = Random.Range(0.4f, 0.6f);
+        Color c = Color.HSVToRGB(h, s, v);
+        c.a = 0.3f;
+        return c;
+    }
 
     void Awake()
     {
@@ -61,6 +82,7 @@ public class MapGenerator : MonoBehaviour
         waterTile = CreateTileFromResource("water");
         mountainTile = CreateTileFromResource("stone");
         zoneTile = CreateColoredTile(zoneColor);
+        currentZoneColor = zoneColor;
     }
 
     void Start()
@@ -160,6 +182,7 @@ public class MapGenerator : MonoBehaviour
             return;
 
         zoneTilemap.SetTile(new Vector3Int(x, y, 0), zoneTile);
+        ZoneOverlay.Create(new Vector2(x + 0.5f, y + 0.5f), currentZoneColor);
     }
 
     private Tile CreateColoredTile(Color color)
