@@ -24,6 +24,7 @@ public class Colonist : MonoBehaviour
     private Rigidbody2D rb;
     private bool wandering;
     private float actionTimer;
+    public int carryingWood;
 
     void Awake()
     {
@@ -61,7 +62,14 @@ public class Colonist : MonoBehaviour
         currentTask = task;
         if (currentTask != null)
         {
-            path = FindPath(Vector2Int.FloorToInt(transform.position), Vector2Int.FloorToInt(currentTask.target));
+            if (currentTask is BuildWallTask)
+            {
+                path = null;
+            }
+            else
+            {
+                path = FindPath(Vector2Int.FloorToInt(transform.position), Vector2Int.FloorToInt(currentTask.target));
+            }
             pathIndex = 0;
             wandering = false;
             activity = "Moving";
@@ -83,7 +91,14 @@ public class Colonist : MonoBehaviour
 
             if (currentTask != null)
             {
-                path = FindPath(Vector2Int.FloorToInt(transform.position), Vector2Int.FloorToInt(currentTask.target));
+                if (currentTask is BuildWallTask)
+                {
+                    path = null;
+                }
+                else
+                {
+                    path = FindPath(Vector2Int.FloorToInt(transform.position), Vector2Int.FloorToInt(currentTask.target));
+                }
                 pathIndex = 0;
                 wandering = false;
             }
@@ -91,6 +106,11 @@ public class Colonist : MonoBehaviour
             {
                 StartWander();
             }
+        }
+        if (currentTask is BuildWallTask bw)
+        {
+            HandleBuildWallTask(bw);
+            return;
         }
 
         if (path == null || pathIndex >= path.Count)
@@ -127,6 +147,13 @@ public class Colonist : MonoBehaviour
             return;
         }
 
+        MoveAlongPath();
+    }
+
+    void MoveAlongPath()
+    {
+        if (path == null || pathIndex >= path.Count)
+            return;
         Vector2 targetPos = path[pathIndex];
         Vector2 dir = targetPos - rb.position;
         float dist = dir.magnitude;
@@ -138,6 +165,80 @@ public class Colonist : MonoBehaviour
         else
         {
             rb.MovePosition(rb.position + dir.normalized * moveSpeed * Time.deltaTime);
+        }
+    }
+
+    void HandleBuildWallTask(BuildWallTask task)
+    {
+        switch (task.stage)
+        {
+            case BuildWallTask.Stage.CollectWood:
+                if (carryingWood >= task.woodNeeded)
+                {
+                    task.stage = BuildWallTask.Stage.MoveToSite;
+                    path = FindPath(Vector2Int.FloorToInt(transform.position), task.cell);
+                    pathIndex = 0;
+                }
+                else
+                {
+                    if (task.targetLog == null)
+                    {
+                        var logs = GameObject.FindObjectsOfType<WoodLog>();
+                        float best = float.MaxValue;
+                        WoodLog chosen = null;
+                        foreach (var l in logs)
+                        {
+                            float d = Vector2.Distance(transform.position, l.transform.position);
+                            if (d < best)
+                            {
+                                best = d;
+                                chosen = l;
+                            }
+                        }
+                        if (chosen == null)
+                        {
+                            activity = "Idle";
+                            return;
+                        }
+                        task.targetLog = chosen;
+                        path = FindPath(Vector2Int.FloorToInt(transform.position), Vector2Int.FloorToInt(chosen.transform.position));
+                        pathIndex = 0;
+                    }
+                    else if (path == null || pathIndex >= path.Count)
+                    {
+                        carryingWood += task.targetLog.Amount;
+                        Object.Destroy(task.targetLog.gameObject);
+                        task.targetLog = null;
+                        task.stage = BuildWallTask.Stage.MoveToSite;
+                        path = FindPath(Vector2Int.FloorToInt(transform.position), task.cell);
+                        pathIndex = 0;
+                    }
+                }
+                MoveAlongPath();
+                break;
+
+            case BuildWallTask.Stage.MoveToSite:
+                if (path == null || pathIndex >= path.Count)
+                {
+                    task.stage = BuildWallTask.Stage.Build;
+                    actionTimer = task.buildTime;
+                }
+                else
+                {
+                    MoveAlongPath();
+                }
+                break;
+
+            case BuildWallTask.Stage.Build:
+                actionTimer -= Time.deltaTime;
+                if (actionTimer <= 0f)
+                {
+                    carryingWood -= task.woodNeeded;
+                    task.onComplete?.Invoke(this);
+                    currentTask = null;
+                    activity = "Idle";
+                }
+                break;
         }
     }
 

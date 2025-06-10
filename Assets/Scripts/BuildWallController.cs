@@ -8,7 +8,6 @@ public class BuildWallController : MonoBehaviour
     private MapGenerator map;
     private TaskManager taskManager;
     private bool placing;
-    private List<Vector2Int> pendingWalls = new List<Vector2Int>();
 
     void Start()
     {
@@ -57,46 +56,19 @@ public class BuildWallController : MonoBehaviour
                 if (taskManager != null)
                 {
                     var cell = new Vector2Int(x, y);
-                    if (ResourceManager.Instance != null && ResourceManager.Instance.Wood > 0)
-                    {
-                        QueueBuildTask(cell);
-                    }
-                    else
-                    {
-                        pendingWalls.Add(cell);
-                    }
+                    QueueBuildTask(cell);
                 }
             }
         }
-
-        TryQueuePendingWalls();
     }
 
     void QueueBuildTask(Vector2Int cell)
     {
-        taskManager.AddTask(new BuildWallTask(cell, 1f, c =>
+        taskManager.AddTask(new BuildWallTask(cell, 1f, 10, c =>
         {
-            if (!ResourceManager.UseWood(1))
-            {
-                pendingWalls.Add(cell);
-                return;
-            }
             map.BuildWallFromFrame(cell.x, cell.y);
+            if (c != null)
+                c.carryingWood -= 10;
         }));
-    }
-
-    void TryQueuePendingWalls()
-    {
-        if (pendingWalls.Count == 0 || taskManager == null)
-            return;
-        if (ResourceManager.Instance == null || ResourceManager.Instance.Wood <= 0)
-            return;
-
-        for (int i = pendingWalls.Count - 1; i >= 0; i--)
-        {
-            var cell = pendingWalls[i];
-            QueueBuildTask(cell);
-            pendingWalls.RemoveAt(i);
-        }
     }
 }

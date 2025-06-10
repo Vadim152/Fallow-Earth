@@ -1,12 +1,23 @@
 using UnityEngine;
 
-public class BuildWallTask : TimedTask
+/// <summary>
+/// Task that handles collecting wood logs and building a wall frame.
+/// </summary>
+public class BuildWallTask : Task
 {
-    public Vector2Int cell;
+    public enum Stage { CollectWood, MoveToSite, Build }
 
-    public BuildWallTask(Vector2Int cell, float duration, System.Action<Colonist> onComplete = null)
-        : base(new Vector2(cell.x + 0.5f, cell.y + 0.5f), duration, onComplete)
+    public Vector2Int cell;
+    public int woodNeeded;
+    public float buildTime;
+    public Stage stage = Stage.CollectWood;
+    public WoodLog targetLog;
+
+    public BuildWallTask(Vector2Int cell, float buildTime, int woodNeeded,
+        System.Action<Colonist> onComplete = null) : base(Vector2.zero, onComplete)
     {
         this.cell = cell;
+        this.buildTime = buildTime;
+        this.woodNeeded = woodNeeded;
     }
 }
