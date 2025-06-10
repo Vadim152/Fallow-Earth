@@ -32,6 +32,25 @@ public class MapGenerator : MonoBehaviour
 
     private bool[,] passable;
 
+    /// <summary>
+    /// Prepare a new zone tile using a random dim color.
+    /// Call this before placing tiles for a new zone.
+    /// </summary>
+    public void BeginNewZone()
+    {
+        zoneTile = CreateColoredTile(GenerateZoneColor());
+    }
+
+    private Color GenerateZoneColor()
+    {
+        float h = Random.value;
+        float s = Random.Range(0.2f, 0.4f);
+        float v = Random.Range(0.4f, 0.6f);
+        Color c = Color.HSVToRGB(h, s, v);
+        c.a = 0.3f;
+        return c;
+    }
+
     void Awake()
     {
         if (groundTilemap == null || treeTilemap == null || zoneTilemap == null)

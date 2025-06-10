@@ -158,6 +158,8 @@ public class AreaSelectionController : MonoBehaviour
         if (map == null)
             return;
 
+        map.BeginNewZone();
+
         int xMin = Mathf.FloorToInt(Mathf.Min(startWorld.x, endWorld.x));
         int xMax = Mathf.FloorToInt(Mathf.Max(startWorld.x, endWorld.x));
         int yMin = Mathf.FloorToInt(Mathf.Min(startWorld.y, endWorld.y));
