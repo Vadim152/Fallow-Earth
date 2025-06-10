@@ -7,6 +7,15 @@ public class Colonist : MonoBehaviour
 {
     public float moveSpeed = 10f;
 
+    // basic stats for UI display
+    [Range(0f,1f)] public float mood = 0.75f;
+    [Range(0f,1f)] public float health = 1f;
+    [HideInInspector] public string activity = "Idle";
+    [Range(0f,1f)] public float hunger;
+    [Range(0f,1f)] public float fatigue;
+    [Range(0f,1f)] public float stress;
+    [Range(0f,1f)] public float social;
+
     private Task currentTask;
     private TaskManager taskManager;
     private MapGenerator map;
@@ -31,6 +40,12 @@ public class Colonist : MonoBehaviour
 
         map = FindObjectOfType<MapGenerator>();
         taskManager = FindObjectOfType<TaskManager>();
+
+        // initialize stats with random values so the info card has data
+        hunger = Random.Range(0f, 1f);
+        fatigue = Random.Range(0f, 1f);
+        stress = Random.Range(0f, 1f);
+        social = Random.Range(0f, 1f);
     }
 
     void Start()
@@ -49,7 +64,15 @@ public class Colonist : MonoBehaviour
             path = FindPath(Vector2Int.FloorToInt(transform.position), Vector2Int.FloorToInt(currentTask.target));
             pathIndex = 0;
             wandering = false;
+            activity = "Moving";
         }
+    }
+
+    public void CancelTasks()
+    {
+        currentTask = null;
+        path = null;
+        activity = "Idle";
     }
 
     void Update()
@@ -84,6 +107,7 @@ public class Colonist : MonoBehaviour
                         actionTimer = 0f;
                         currentTask.Complete(this);
                         currentTask = null;
+                        activity = "Idle";
                     }
                     else
                     {
@@ -94,6 +118,7 @@ public class Colonist : MonoBehaviour
                 {
                     currentTask.Complete(this);
                     currentTask = null;
+                    activity = "Idle";
                 }
             }
 
@@ -206,6 +231,7 @@ public class Colonist : MonoBehaviour
                 {
                     pathIndex = 0;
                     wandering = true;
+                    activity = "Wandering";
                     return;
                 }
             }
