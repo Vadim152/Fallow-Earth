@@ -204,8 +204,9 @@ public class MapGenerator : MonoBehaviour
         if (passable != null && x < passable.GetLength(0) && y < passable.GetLength(1))
             passable[x, y] = true;
 
-        WoodLog.Create(new Vector2(x + 0.5f, y + 0.5f));
-        ResourceManager.AddWood(1);
+        int amount = Random.Range(30, 51);
+        WoodLog.Create(new Vector2(x + 0.5f, y + 0.5f), amount);
+        ResourceManager.AddWood(amount);
     }
 
     public void SetZone(int x, int y)

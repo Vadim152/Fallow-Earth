@@ -34,7 +34,7 @@ Two colonists are created automatically when the scene starts. If no tasks are a
 A simple chopping tool is available via the `TreeChopController` script. When the game starts a button labeled **Срубить** is created on the UI. Toggle the button and click or tap on any tree tile to designate it for chopping. When active, the button now animates by pressing inward so it's clear you can tap on trees. Free colonists will automatically receive tasks to move to the tree and remove it. Selected trees are tinted slightly brighter so you can easily see which ones you've marked.
 
 
-Chopped trees now drop a small `WoodLog` object at their position, showing that resources can be gathered from the environment.
+Chopped trees now drop a `WoodLog` object at their position. Each log displays how much wood was gathered (between 30 and 50) so it's clear what resources were added to your stockpile.
 
 Chopped wood increases a global pool managed by `ResourceManager`. When placing a wooden wall only a transparent grey frame appears. Colonists construct the actual wall using one unit of wood whenever resources are available.
 
