@@ -206,7 +206,6 @@ public class MapGenerator : MonoBehaviour
 
         int amount = Random.Range(30, 51);
         WoodLog.Create(new Vector2(x + 0.5f, y + 0.5f), amount);
-        ResourceManager.AddWood(amount);
     }
 
     public void SetZone(int x, int y)
