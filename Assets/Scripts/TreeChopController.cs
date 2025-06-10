@@ -121,7 +121,9 @@ public class TreeChopController : MonoBehaviour
             screenPos = Input.mousePosition;
         }
 
-        if (clicked)
+        bool pointerOverUI = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+
+        if (clicked && !pointerOverUI)
         {
             Vector3 world = Camera.main.ScreenToWorldPoint(screenPos);
             int x = Mathf.FloorToInt(world.x);

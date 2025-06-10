@@ -41,7 +41,9 @@ public class BuildWallController : MonoBehaviour
             screenPos = Input.mousePosition;
         }
 
-        if (clicked && !AreaSelectionController.IsSelecting && !EventSystem.current.IsPointerOverGameObject())
+        bool pointerOverUI = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+
+        if (clicked && !AreaSelectionController.IsSelecting && !pointerOverUI)
         {
             Vector3 world = Camera.main.ScreenToWorldPoint(screenPos);
             int x = Mathf.FloorToInt(world.x);
