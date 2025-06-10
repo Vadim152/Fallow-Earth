@@ -53,7 +53,10 @@ public class ZoneMenuController : MonoBehaviour
         rt.anchorMin = new Vector2(0f, 0f);
         rt.anchorMax = new Vector2(0f, 0f);
         rt.pivot = new Vector2(0f, 0f);
-        rt.anchoredPosition = new Vector2(20f, 20f);
+        // Place the zones button above the existing build and chop buttons
+        // to avoid overlapping with the "Chop" button at (20,20) and the
+        // build button at (20,60).
+        rt.anchoredPosition = new Vector2(20f, 100f);
         rt.sizeDelta = new Vector2(160f, 30f);
 
         GameObject textObj = new GameObject("Text");
