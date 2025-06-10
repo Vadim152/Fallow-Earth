@@ -1,11 +1,14 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
+using System.Collections.Generic;
+
 public class BuildWallController : MonoBehaviour
 {
     private MapGenerator map;
     private TaskManager taskManager;
     private bool placing;
+    private List<Vector2Int> pendingWalls = new List<Vector2Int>();
 
     void Start()
     {
@@ -54,18 +57,46 @@ public class BuildWallController : MonoBehaviour
                 if (taskManager != null)
                 {
                     var cell = new Vector2Int(x, y);
-                    taskManager.AddTask(new BuildWallTask(cell, 1f, c =>
+                    if (ResourceManager.Instance != null && ResourceManager.Instance.Wood > 0)
                     {
-                        if (!ResourceManager.UseWood(1))
-                        {
-                            // Requeue if no resources
-                            taskManager.AddTask(new BuildWallTask(cell, 1f));
-                            return;
-                        }
-                        map.BuildWallFromFrame(cell.x, cell.y);
-                    }));
+                        QueueBuildTask(cell);
+                    }
+                    else
+                    {
+                        pendingWalls.Add(cell);
+                    }
                 }
             }
+        }
+
+        TryQueuePendingWalls();
+    }
+
+    void QueueBuildTask(Vector2Int cell)
+    {
+        taskManager.AddTask(new BuildWallTask(cell, 1f, c =>
+        {
+            if (!ResourceManager.UseWood(1))
+            {
+                pendingWalls.Add(cell);
+                return;
+            }
+            map.BuildWallFromFrame(cell.x, cell.y);
+        }));
+    }
+
+    void TryQueuePendingWalls()
+    {
+        if (pendingWalls.Count == 0 || taskManager == null)
+            return;
+        if (ResourceManager.Instance == null || ResourceManager.Instance.Wood <= 0)
+            return;
+
+        for (int i = pendingWalls.Count - 1; i >= 0; i--)
+        {
+            var cell = pendingWalls[i];
+            QueueBuildTask(cell);
+            pendingWalls.RemoveAt(i);
         }
     }
 }
