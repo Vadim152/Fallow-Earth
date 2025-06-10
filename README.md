@@ -42,7 +42,7 @@ The `BuildMenuController` script creates a **Строительство** button
 
 ## Mobile Camera Orientation
 
-A small bootstrap script named `CameraBootstrap` forces portrait orientation on startup, enforces a 9:16 aspect ratio with letterboxing and automatically adds the `CameraPanZoomController` component if it is missing. This prevents stretching on wide displays and ensures the project runs correctly on mobile devices.
+`CameraBootstrap` now keeps the main camera aligned with the current screen resolution. A small `CameraAutoFitter` component updates the camera whenever the device orientation or window size changes and the `CameraPanZoomController` component is added automatically if it is missing. This prevents stretching on wide or tall displays and works on both desktop and mobile devices.
 
 ## Camera Controls
 
