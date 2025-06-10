@@ -40,6 +40,10 @@ Chopped trees now drop a small `WoodLog` object at their position, showing that 
 
 The `BuildMenuController` script creates a **Строительство** button. Pressing it opens a panel containing eight building buttons laid out in a 2x4 grid. The panel smoothly scales in and out when toggled so the interface feels more responsive.
 
+## Zone Menu
+
+`ZoneMenuController` adds a **Зоны** button to the UI. Tapping it displays a 2x4 grid of zone buttons. The first entry is labeled **Склад** (warehouse) with seven additional placeholder buttons.
+
 ## Mobile Camera Orientation
 
 `CameraBootstrap` now keeps the main camera aligned with the current screen resolution. A small `CameraAutoFitter` component updates the camera whenever the device orientation or window size changes and the `CameraPanZoomController` component is added automatically if it is missing. This prevents stretching on wide or tall displays and works on both desktop and mobile devices.
