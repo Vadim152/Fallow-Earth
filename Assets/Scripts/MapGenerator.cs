@@ -6,11 +6,13 @@ public class MapGenerator : MonoBehaviour
     public Tilemap groundTilemap;
     public Tilemap treeTilemap;
     public Tilemap zoneTilemap;
+    public Tilemap wallTilemap;
 
     public Color grassColor = new Color(0.2f, 0.6f, 0.2f);
     public Color waterColor = new Color(0.2f, 0.2f, 0.7f);
     public Color mountainColor = Color.gray;
     public Color treeColor = new Color(0.25f, 0.2f, 0.1f);
+    public Color wallColor = new Color(0.5f, 0.3f, 0.2f);
     public Color zoneColor = new Color(1f, 1f, 0f, 0.4f);
     public int width = 200;
     public int height = 200;
@@ -29,6 +31,7 @@ public class MapGenerator : MonoBehaviour
     private TileBase mountainTile;
     private TileBase treeTile;
     private TileBase zoneTile;
+    private TileBase wallTile;
     private Color currentZoneColor;
 
     /// <summary>
@@ -62,7 +65,7 @@ public class MapGenerator : MonoBehaviour
 
     void Awake()
     {
-        if (groundTilemap == null || treeTilemap == null || zoneTilemap == null)
+        if (groundTilemap == null || treeTilemap == null || zoneTilemap == null || wallTilemap == null)
         {
             var gridObj = new GameObject("Grid");
             var grid = gridObj.AddComponent<Grid>();
@@ -82,6 +85,12 @@ public class MapGenerator : MonoBehaviour
             zoneTilemap = zoneObj.AddComponent<Tilemap>();
             var zr = zoneObj.AddComponent<TilemapRenderer>();
             zr.sortingOrder = 10;
+
+            var wallObj = new GameObject("Walls");
+            wallObj.transform.parent = gridObj.transform;
+            wallTilemap = wallObj.AddComponent<Tilemap>();
+            var wr = wallObj.AddComponent<TilemapRenderer>();
+            wr.sortingOrder = 5;
         }
 
         groundTile = CreateTileFromResource("grass");
@@ -89,6 +98,7 @@ public class MapGenerator : MonoBehaviour
         waterTile = CreateTileFromResource("water");
         mountainTile = CreateTileFromResource("stone");
         zoneTile = CreateColoredTile(zoneColor);
+        wallTile = CreateColoredTile(wallColor);
         currentZoneColor = zoneColor;
     }
 
@@ -107,6 +117,8 @@ public class MapGenerator : MonoBehaviour
             treeTilemap.ClearAllTiles();
         if (zoneTilemap != null)
             zoneTilemap.ClearAllTiles();
+        if (wallTilemap != null)
+            wallTilemap.ClearAllTiles();
 
         Vector2 noiseOffset = new Vector2(Random.Range(0f, 1000f), Random.Range(0f, 1000f));
 
@@ -190,6 +202,22 @@ public class MapGenerator : MonoBehaviour
 
         zoneTilemap.SetTile(new Vector3Int(x, y, 0), zoneTile);
         ZoneOverlay.Create(new Vector2(x + 0.5f, y + 0.5f), currentZoneColor);
+    }
+
+    public void PlaceWall(int x, int y)
+    {
+        if (wallTilemap == null || !IsPassable(x, y))
+            return;
+
+        wallTilemap.SetTile(new Vector3Int(x, y, 0), wallTile);
+        passable[x, y] = false;
+    }
+
+    public bool HasWall(int x, int y)
+    {
+        if (wallTilemap == null || x < 0 || x >= width || y < 0 || y >= height)
+            return false;
+        return wallTilemap.GetTile(new Vector3Int(x, y, 0)) != null;
     }
 
     private Tile CreateColoredTile(Color color)
