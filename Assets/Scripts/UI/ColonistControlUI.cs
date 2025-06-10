@@ -9,11 +9,14 @@ public class ColonistControlUI : MonoBehaviour
 
     private List<Colonist> colonists = new List<Colonist>();
     private Colonist selected;
+    private ColonistInfoCard infoCard;
 
     void Start()
     {
         colonists.AddRange(FindObjectsOfType<Colonist>());
         RefreshButtons();
+
+        infoCard = FindObjectOfType<ColonistInfoCard>();
     }
 
     void RefreshButtons()
@@ -25,7 +28,11 @@ public class ColonistControlUI : MonoBehaviour
         {
             var btn = Instantiate(buttonPrefab, buttonContainer);
             btn.GetComponentInChildren<Text>().text = c.name;
-            btn.onClick.AddListener(() => { selected = c; });
+            btn.onClick.AddListener(() => {
+                selected = c;
+                if (infoCard != null)
+                    infoCard.Show(c);
+            });
         }
     }
 
@@ -37,6 +44,8 @@ public class ColonistControlUI : MonoBehaviour
             world.z = 0f;
             selected.SetTask(new Task(world));
             selected = null;
+            if (infoCard != null)
+                infoCard.Hide();
         }
     }
 }
