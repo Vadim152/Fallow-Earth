@@ -57,4 +57,4 @@ For simple drag panning without zooming, use the `CameraDragController` script. 
 
 ## Area Selection
 
-`AreaSelectionController` lets you drag out a rectangle after holding the left mouse button (or a finger on mobile) for a short delay. Once the delay passes, a translucent green box appears to show the area being selected. Releasing the button now creates a zone over any ground tiles inside the selection. Non-passable tiles such as water or mountains are ignored when placing zones.
+`AreaSelectionController` lets you drag out a rectangle after holding the left mouse button (or a finger on mobile) for a short delay. Once the delay passes, a translucent green box appears to show the area being selected. Releasing the button now creates a zone over any ground tiles inside the selection using a random dim color. Each cell in the zone also receives a small transparent overlay object so the designated area remains visible even after the selection box disappears. Non-passable tiles such as water or mountains are ignored when placing zones.

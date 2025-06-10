@@ -29,6 +29,7 @@ public class MapGenerator : MonoBehaviour
     private TileBase mountainTile;
     private TileBase treeTile;
     private TileBase zoneTile;
+    private Color currentZoneColor;
 
     private bool[,] passable;
 
@@ -38,7 +39,8 @@ public class MapGenerator : MonoBehaviour
     /// </summary>
     public void BeginNewZone()
     {
-        zoneTile = CreateColoredTile(GenerateZoneColor());
+        currentZoneColor = GenerateZoneColor();
+        zoneTile = CreateColoredTile(currentZoneColor);
     }
 
     private Color GenerateZoneColor()
@@ -80,6 +82,7 @@ public class MapGenerator : MonoBehaviour
         waterTile = CreateTileFromResource("water");
         mountainTile = CreateTileFromResource("stone");
         zoneTile = CreateColoredTile(zoneColor);
+        currentZoneColor = zoneColor;
     }
 
     void Start()
@@ -179,6 +182,7 @@ public class MapGenerator : MonoBehaviour
             return;
 
         zoneTilemap.SetTile(new Vector3Int(x, y, 0), zoneTile);
+        ZoneOverlay.Create(new Vector2(x + 0.5f, y + 0.5f), currentZoneColor);
     }
 
     private Tile CreateColoredTile(Color color)
