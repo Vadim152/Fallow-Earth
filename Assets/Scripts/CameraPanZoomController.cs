@@ -35,6 +35,9 @@ public class CameraPanZoomController : MonoBehaviour
 
     void HandleTouch()
     {
+        if (AreaSelectionController.IsSelecting)
+            return;
+
         if (Input.touchCount == 1)
         {
             Touch t = Input.GetTouch(0);
@@ -73,6 +76,9 @@ public class CameraPanZoomController : MonoBehaviour
 
     void HandleMouse()
     {
+        if (AreaSelectionController.IsSelecting)
+            return;
+
         if (Input.GetMouseButtonDown(0))
         {
             lastPanPosition = cam.ScreenToWorldPoint(Input.mousePosition);
