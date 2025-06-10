@@ -2,16 +2,18 @@ using UnityEngine;
 
 /// <summary>
 /// Simple item dropped after chopping a tree.
-/// Currently only visual and does not affect gameplay.
+/// Displays how much wood was collected.
 /// </summary>
 public class WoodLog : MonoBehaviour
 {
     static Sprite woodSprite;
 
+    public int Amount { get; private set; }
+
     /// <summary>
     /// Spawns a new wood log at the given world position.
     /// </summary>
-    public static WoodLog Create(Vector2 position)
+    public static WoodLog Create(Vector2 position, int amount)
     {
         if (woodSprite == null)
         {
@@ -26,6 +28,23 @@ public class WoodLog : MonoBehaviour
         var sr = go.AddComponent<SpriteRenderer>();
         sr.sprite = woodSprite;
         go.transform.position = position;
-        return go.AddComponent<WoodLog>();
+
+        WoodLog log = go.AddComponent<WoodLog>();
+        log.Amount = amount;
+        log.CreateText();
+        return log;
+    }
+
+    void CreateText()
+    {
+        GameObject tObj = new GameObject("AmountText");
+        tObj.transform.SetParent(transform, false);
+        var tm = tObj.AddComponent<TextMesh>();
+        tm.text = Amount.ToString();
+        tm.characterSize = 0.1f;
+        tm.fontSize = 32;
+        tm.alignment = TextAlignment.Center;
+        tm.anchor = TextAnchor.MiddleCenter;
+        tm.color = Color.white;
     }
 }
