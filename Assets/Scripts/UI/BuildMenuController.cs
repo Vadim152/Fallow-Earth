@@ -92,28 +92,32 @@ public class BuildMenuController : MonoBehaviour
         grid.constraintCount = 2;
         grid.padding = new RectOffset(5, 5, 5, 5);
 
-        for (int i = 0; i < 8; i++)
+        GameObject wallObj = new GameObject("WoodWallButton");
+        wallObj.transform.SetParent(menuPanel.transform, false);
+        Image wallImg = wallObj.AddComponent<Image>();
+        wallImg.color = new Color(0.9f, 0.9f, 0.9f, 1f);
+        Button wallBtn = wallObj.AddComponent<Button>();
+        wallBtn.targetGraphic = wallImg;
+        wallBtn.onClick.AddListener(() =>
         {
-            GameObject bObj = new GameObject($"Building{i + 1}");
-            bObj.transform.SetParent(menuPanel.transform, false);
-            Image bImg = bObj.AddComponent<Image>();
-            bImg.color = new Color(0.9f, 0.9f, 0.9f, 1f);
-            Button bBtn = bObj.AddComponent<Button>();
-            bBtn.targetGraphic = bImg;
+            BuildWallController ctrl = FindObjectOfType<BuildWallController>();
+            if (ctrl != null)
+                ctrl.TogglePlacing();
+            ToggleMenu();
+        });
 
-            GameObject tObj = new GameObject("Text");
-            tObj.transform.SetParent(bObj.transform, false);
-            Text t = tObj.AddComponent<Text>();
-            t.text = $"B{i + 1}";
-            t.alignment = TextAnchor.MiddleCenter;
-            t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            t.color = Color.black;
-            RectTransform tRt = tObj.GetComponent<RectTransform>();
-            tRt.anchorMin = Vector2.zero;
-            tRt.anchorMax = Vector2.one;
-            tRt.offsetMin = Vector2.zero;
-            tRt.offsetMax = Vector2.zero;
-        }
+        GameObject txtObj = new GameObject("Text");
+        txtObj.transform.SetParent(wallObj.transform, false);
+        Text txt = txtObj.AddComponent<Text>();
+        txt.text = "\u0414\u0435\u0440\u0435\u0432\u044f\u043d\u043d\u0430\u044f \u0441\u0442\u0435\u043d\u0430"; // "Деревянная стена"
+        txt.alignment = TextAnchor.MiddleCenter;
+        txt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        txt.color = Color.black;
+        RectTransform txtRt = txtObj.GetComponent<RectTransform>();
+        txtRt.anchorMin = Vector2.zero;
+        txtRt.anchorMax = Vector2.one;
+        txtRt.offsetMin = Vector2.zero;
+        txtRt.offsetMax = Vector2.zero;
     }
 
     void ToggleMenu()
