@@ -36,6 +36,8 @@ A simple chopping tool is available via the `TreeChopController` script. When th
 
 Chopped trees now drop a small `WoodLog` object at their position, showing that resources can be gathered from the environment.
 
+Chopped wood increases a global pool managed by `ResourceManager`. When placing a wooden wall only a transparent grey frame appears. Colonists construct the actual wall using one unit of wood whenever resources are available.
+
 ## Building Menu
 
 The `BuildMenuController` script creates a **Строительство** button. Pressing it opens a panel containing eight building buttons laid out in a 2x4 grid. The panel smoothly scales in and out when toggled so the interface feels more responsive.
