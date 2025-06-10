@@ -4,7 +4,7 @@ using UnityEngine;
 public class CameraPanZoomController : MonoBehaviour
 {
     public float moveSpeed = 1f;
-    public float zoomSpeed = 0.01f;
+    public float zoomSpeed = 0.25f;
     public float minSize = 5f;
     public float maxSize = 20f;
 
