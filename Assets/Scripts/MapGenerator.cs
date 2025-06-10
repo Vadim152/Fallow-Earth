@@ -10,8 +10,8 @@ public class MapGenerator : MonoBehaviour
     public Color waterColor = new Color(0.2f, 0.2f, 0.7f);
     public Color mountainColor = Color.gray;
     public Color treeColor = new Color(0.25f, 0.2f, 0.1f);
-    public int width = 50;
-    public int height = 50;
+    public int width = 200;
+    public int height = 200;
     [Range(0f,1f)]
     public float treeProbability = 0.1f;
 
