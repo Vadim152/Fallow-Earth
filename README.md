@@ -54,3 +54,7 @@ The `CameraPanZoomController` script enables mobile-style controls. Swipe with o
 
 For simple drag panning without zooming, use the `CameraDragController` script. Hold the left mouse button or touch the screen with one finger and move to pan the view, just like dragging a photo around.
 
+
+## Area Selection
+
+`AreaSelectionController` lets you drag out a rectangle after holding the left mouse button (or a finger on mobile) for a short delay. Once the delay passes, a translucent green box appears to show the area being selected. Releasing the button logs the world-space bounds of the rectangle.
