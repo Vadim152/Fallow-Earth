@@ -153,6 +153,23 @@ public class AreaSelectionController : MonoBehaviour
         startWorld.z = 0f;
         endWorld.z = 0f;
         Debug.Log($"Selected area from {startWorld} to {endWorld}");
+
+        MapGenerator map = FindObjectOfType<MapGenerator>();
+        if (map == null)
+            return;
+
+        int xMin = Mathf.FloorToInt(Mathf.Min(startWorld.x, endWorld.x));
+        int xMax = Mathf.FloorToInt(Mathf.Max(startWorld.x, endWorld.x));
+        int yMin = Mathf.FloorToInt(Mathf.Min(startWorld.y, endWorld.y));
+        int yMax = Mathf.FloorToInt(Mathf.Max(startWorld.y, endWorld.y));
+
+        for (int x = xMin; x <= xMax; x++)
+        {
+            for (int y = yMin; y <= yMax; y++)
+            {
+                map.SetZone(x, y);
+            }
+        }
     }
 
     void ResetSelection()

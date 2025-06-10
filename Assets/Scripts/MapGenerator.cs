@@ -5,11 +5,13 @@ public class MapGenerator : MonoBehaviour
 {
     public Tilemap groundTilemap;
     public Tilemap treeTilemap;
+    public Tilemap zoneTilemap;
 
     public Color grassColor = new Color(0.2f, 0.6f, 0.2f);
     public Color waterColor = new Color(0.2f, 0.2f, 0.7f);
     public Color mountainColor = Color.gray;
     public Color treeColor = new Color(0.25f, 0.2f, 0.1f);
+    public Color zoneColor = new Color(1f, 1f, 0f, 0.4f);
     public int width = 200;
     public int height = 200;
     [Range(0f,1f)]
@@ -26,12 +28,13 @@ public class MapGenerator : MonoBehaviour
     private TileBase waterTile;
     private TileBase mountainTile;
     private TileBase treeTile;
+    private TileBase zoneTile;
 
     private bool[,] passable;
 
     void Awake()
     {
-        if (groundTilemap == null || treeTilemap == null)
+        if (groundTilemap == null || treeTilemap == null || zoneTilemap == null)
         {
             var gridObj = new GameObject("Grid");
             var grid = gridObj.AddComponent<Grid>();
@@ -45,12 +48,19 @@ public class MapGenerator : MonoBehaviour
             treeObj.transform.parent = gridObj.transform;
             treeTilemap = treeObj.AddComponent<Tilemap>();
             treeObj.AddComponent<TilemapRenderer>();
+
+            var zoneObj = new GameObject("Zones");
+            zoneObj.transform.parent = gridObj.transform;
+            zoneTilemap = zoneObj.AddComponent<Tilemap>();
+            var zr = zoneObj.AddComponent<TilemapRenderer>();
+            zr.sortingOrder = 10;
         }
 
         groundTile = CreateTileFromResource("grass");
         treeTile = CreateTileFromResource("tree");
         waterTile = CreateTileFromResource("water");
         mountainTile = CreateTileFromResource("stone");
+        zoneTile = CreateColoredTile(zoneColor);
     }
 
     void Start()
@@ -66,6 +76,8 @@ public class MapGenerator : MonoBehaviour
             groundTilemap.ClearAllTiles();
         if (treeTilemap != null)
             treeTilemap.ClearAllTiles();
+        if (zoneTilemap != null)
+            zoneTilemap.ClearAllTiles();
 
         Vector2 noiseOffset = new Vector2(Random.Range(0f, 1000f), Random.Range(0f, 1000f));
 
@@ -140,6 +152,14 @@ public class MapGenerator : MonoBehaviour
             passable[x, y] = true;
 
         WoodLog.Create(new Vector2(x + 0.5f, y + 0.5f));
+    }
+
+    public void SetZone(int x, int y)
+    {
+        if (zoneTilemap == null || !IsPassable(x, y))
+            return;
+
+        zoneTilemap.SetTile(new Vector3Int(x, y, 0), zoneTile);
     }
 
     private Tile CreateColoredTile(Color color)
