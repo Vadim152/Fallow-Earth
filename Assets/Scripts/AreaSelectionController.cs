@@ -4,6 +4,8 @@ using UnityEngine.EventSystems;
 
 public class AreaSelectionController : MonoBehaviour
 {
+    public static bool IsSelecting { get; private set; }
+
     public float holdDelay = 0.3f;
 
     private Canvas canvas;
@@ -79,6 +81,7 @@ public class AreaSelectionController : MonoBehaviour
             else if (!selecting && holdTimer >= holdDelay)
             {
                 selecting = true;
+                IsSelecting = true;
                 boxObj.SetActive(true);
             }
         }
@@ -116,6 +119,7 @@ public class AreaSelectionController : MonoBehaviour
             else if (!selecting && holdTimer >= holdDelay)
             {
                 selecting = true;
+                IsSelecting = true;
                 boxObj.SetActive(true);
             }
         }
@@ -155,6 +159,7 @@ public class AreaSelectionController : MonoBehaviour
     {
         isHolding = false;
         selecting = false;
+        IsSelecting = false;
         boxObj.SetActive(false);
     }
 }
