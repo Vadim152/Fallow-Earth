@@ -118,6 +118,33 @@ public class BuildMenuController : MonoBehaviour
         txtRt.anchorMax = Vector2.one;
         txtRt.offsetMin = Vector2.zero;
         txtRt.offsetMax = Vector2.zero;
+
+        GameObject doorObj = new GameObject("WoodDoorButton");
+        doorObj.transform.SetParent(menuPanel.transform, false);
+        Image doorImg = doorObj.AddComponent<Image>();
+        doorImg.color = new Color(0.9f, 0.9f, 0.9f, 1f);
+        Button doorBtn = doorObj.AddComponent<Button>();
+        doorBtn.targetGraphic = doorImg;
+        doorBtn.onClick.AddListener(() =>
+        {
+            BuildDoorController ctrl = FindObjectOfType<BuildDoorController>();
+            if (ctrl != null)
+                ctrl.TogglePlacing();
+            ToggleMenu();
+        });
+
+        GameObject dTxtObj = new GameObject("Text");
+        dTxtObj.transform.SetParent(doorObj.transform, false);
+        Text dTxt = dTxtObj.AddComponent<Text>();
+        dTxt.text = "\u0414\u0435\u0440\u0435\u0432\u044f\u043d\u043d\u0430\u044f \u0434\u0432\u0435\u0440\u044c"; // "Деревянная дверь"
+        dTxt.alignment = TextAnchor.MiddleCenter;
+        dTxt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        dTxt.color = Color.black;
+        RectTransform dRt = dTxtObj.GetComponent<RectTransform>();
+        dRt.anchorMin = Vector2.zero;
+        dRt.anchorMax = Vector2.one;
+        dRt.offsetMin = Vector2.zero;
+        dRt.offsetMax = Vector2.zero;
     }
 
     void ToggleMenu()

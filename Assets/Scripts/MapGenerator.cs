@@ -16,6 +16,7 @@ public class MapGenerator : MonoBehaviour
     public Color wallColor = new Color(0.5f, 0.3f, 0.2f);
     public Color zoneColor = new Color(1f, 1f, 0f, 0.4f);
     public Color frameColor = new Color(0.7f, 0.7f, 0.7f, 0.4f);
+    public Color doorColor = new Color(0.6f, 0.4f, 0.2f);
     public int width = 200;
     public int height = 200;
     [Range(0f,1f)]
@@ -35,6 +36,7 @@ public class MapGenerator : MonoBehaviour
     private TileBase zoneTile;
     private TileBase wallTile;
     private TileBase frameTile;
+    private TileBase doorFrameTile;
     private Color currentZoneColor;
 
     /// <summary>
@@ -109,6 +111,7 @@ public class MapGenerator : MonoBehaviour
         zoneTile = CreateColoredTile(zoneColor);
         wallTile = CreateColoredTile(wallColor);
         frameTile = CreateColoredTile(frameColor);
+        doorFrameTile = CreateColoredTile(frameColor);
         currentZoneColor = zoneColor;
     }
 
@@ -253,6 +256,34 @@ public class MapGenerator : MonoBehaviour
         if (wallTilemap == null || x < 0 || x >= width || y < 0 || y >= height)
             return false;
         return wallTilemap.GetTile(new Vector3Int(x, y, 0)) != null;
+    }
+
+    public void PlaceDoorFrame(int x, int y)
+    {
+        if (frameTilemap == null || !IsPassable(x, y) || HasWall(x, y) || HasDoor(x, y))
+            return;
+        frameTilemap.SetTile(new Vector3Int(x, y, 0), doorFrameTile);
+    }
+
+    public bool HasDoorFrame(int x, int y)
+    {
+        if (frameTilemap == null || x < 0 || x >= width || y < 0 || y >= height)
+            return false;
+        return frameTilemap.GetTile(new Vector3Int(x, y, 0)) == doorFrameTile;
+    }
+
+    public void BuildDoorFromFrame(int x, int y)
+    {
+        if (!HasDoorFrame(x, y))
+            return;
+        frameTilemap.SetTile(new Vector3Int(x, y, 0), null);
+        Door.Create(new Vector2(x + 0.5f, y + 0.5f));
+    }
+
+    public bool HasDoor(int x, int y)
+    {
+        Collider2D col = Physics2D.OverlapPoint(new Vector2(x + 0.5f, y + 0.5f));
+        return col != null && col.GetComponent<Door>() != null;
     }
 
     private Tile CreateColoredTile(Color color)
