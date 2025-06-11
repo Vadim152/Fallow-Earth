@@ -118,7 +118,15 @@ public class Colonist : MonoBehaviour
             }
             else if (path == null || pathIndex >= path.Count)
             {
-                if (fatigue > 0.6f)
+                if (hunger > 0.6f && map != null && map.TryFindClosestBerryCell(transform.position, out var berry))
+                {
+                    SetTask(new EatBerryTask(berry, 2f, c =>
+                    {
+                        map.RemoveBerries(berry.x, berry.y);
+                        c.hunger = Mathf.Clamp01(c.hunger - 0.5f);
+                    }));
+                }
+                else if (fatigue > 0.6f)
                 {
                     Bed bed = Bed.FindAvailable(transform.position);
                     if (bed != null)
@@ -160,6 +168,8 @@ public class Colonist : MonoBehaviour
                 {
                     if (actionTimer <= 0f)
                         actionTimer = timed.duration;
+                    if (currentTask is EatBerryTask)
+                        activity = "Eating";
                     actionTimer -= Time.deltaTime;
                     if (actionTimer <= 0f)
                     {

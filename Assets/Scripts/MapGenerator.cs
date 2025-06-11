@@ -8,6 +8,7 @@ public class MapGenerator : MonoBehaviour
     public Tilemap zoneTilemap;
     public Tilemap wallTilemap;
     public Tilemap frameTilemap;
+    public Tilemap berryTilemap;
 
     public Color grassColor = new Color(0.2f, 0.6f, 0.2f);
     public Color waterColor = new Color(0.2f, 0.2f, 0.7f);
@@ -17,10 +18,13 @@ public class MapGenerator : MonoBehaviour
     public Color zoneColor = new Color(1f, 1f, 0f, 0.4f);
     public Color frameColor = new Color(0.7f, 0.7f, 0.7f, 0.4f);
     public Color doorColor = new Color(0.6f, 0.4f, 0.2f);
+    public Color berryColor = new Color(0.8f, 0.1f, 0.2f);
     public int width = 200;
     public int height = 200;
     [Range(0f,1f)]
     public float treeProbability = 0.1f;
+    [Range(0f,1f)]
+    public float berryProbability = 0.05f;
 
     [Header("Noise Settings")]
     public float noiseScale = 0.1f;
@@ -37,6 +41,7 @@ public class MapGenerator : MonoBehaviour
     private TileBase wallTile;
     private TileBase frameTile;
     private TileBase doorFrameTile;
+    private TileBase berryTile;
     private Color currentZoneColor;
 
     /// <summary>
@@ -85,6 +90,11 @@ public class MapGenerator : MonoBehaviour
             treeTilemap = treeObj.AddComponent<Tilemap>();
             treeObj.AddComponent<TilemapRenderer>();
 
+            var berryObj = new GameObject("Berries");
+            berryObj.transform.parent = gridObj.transform;
+            berryTilemap = berryObj.AddComponent<Tilemap>();
+            berryObj.AddComponent<TilemapRenderer>();
+
             var zoneObj = new GameObject("Zones");
             zoneObj.transform.parent = gridObj.transform;
             zoneTilemap = zoneObj.AddComponent<Tilemap>();
@@ -112,6 +122,7 @@ public class MapGenerator : MonoBehaviour
         wallTile = CreateColoredTile(wallColor);
         frameTile = CreateColoredTile(frameColor);
         doorFrameTile = CreateColoredTile(frameColor);
+        berryTile = CreateColoredTile(berryColor);
         currentZoneColor = zoneColor;
     }
 
@@ -134,6 +145,8 @@ public class MapGenerator : MonoBehaviour
             wallTilemap.ClearAllTiles();
         if (frameTilemap != null)
             frameTilemap.ClearAllTiles();
+        if (berryTilemap != null)
+            berryTilemap.ClearAllTiles();
 
         Vector2 noiseOffset = new Vector2(Random.Range(0f, 1000f), Random.Range(0f, 1000f));
 
@@ -168,6 +181,12 @@ public class MapGenerator : MonoBehaviour
                 {
                     if (treeTilemap != null && treeTile != null)
                         treeTilemap.SetTile(pos, treeTile);
+                    passable[x, y] = false;
+                }
+                else if (passable[x, y] && Random.value < berryProbability)
+                {
+                    if (berryTilemap != null && berryTile != null)
+                        berryTilemap.SetTile(pos, berryTile);
                     passable[x, y] = false;
                 }
             }
@@ -209,6 +228,48 @@ public class MapGenerator : MonoBehaviour
 
         int amount = Random.Range(30, 51);
         WoodLog.Create(new Vector2(x + 0.5f, y + 0.5f), amount);
+    }
+
+    public bool HasBerries(int x, int y)
+    {
+        if (berryTilemap == null || x < 0 || x >= width || y < 0 || y >= height)
+            return false;
+        return berryTilemap.GetTile(new Vector3Int(x, y, 0)) != null;
+    }
+
+    public void RemoveBerries(int x, int y)
+    {
+        if (berryTilemap == null || x < 0 || x >= width || y < 0 || y >= height)
+            return;
+
+        berryTilemap.SetTile(new Vector3Int(x, y, 0), null);
+        if (passable != null && x < passable.GetLength(0) && y < passable.GetLength(1))
+            passable[x, y] = true;
+    }
+
+    public bool TryFindClosestBerryCell(Vector2 pos, out Vector2Int cell)
+    {
+        cell = Vector2Int.zero;
+        if (berryTilemap == null)
+            return false;
+        float best = float.MaxValue;
+        bool found = false;
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                if (!HasBerries(x, y))
+                    continue;
+                float d = Vector2.Distance(pos, new Vector2(x + 0.5f, y + 0.5f));
+                if (d < best)
+                {
+                    best = d;
+                    cell = new Vector2Int(x, y);
+                    found = true;
+                }
+            }
+        }
+        return found;
     }
 
     public void SetZone(int x, int y)
