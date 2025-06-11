@@ -67,6 +67,10 @@ public class Colonist : MonoBehaviour
             {
                 path = null;
             }
+            else if (currentTask is RestTask rest)
+            {
+                path = FindPath(Vector2Int.FloorToInt(transform.position), Vector2Int.FloorToInt(rest.bed.transform.position));
+            }
             else if (currentTask is HaulLogTask haul && haul.stage == HaulLogTask.Stage.MoveToLog)
             {
                 path = FindPath(Vector2Int.FloorToInt(transform.position), Vector2Int.FloorToInt(haul.log.transform.position));
@@ -114,7 +118,22 @@ public class Colonist : MonoBehaviour
             }
             else if (path == null || pathIndex >= path.Count)
             {
-                StartWander();
+                if (fatigue > 0.6f)
+                {
+                    Bed bed = Bed.FindAvailable(transform.position);
+                    if (bed != null)
+                    {
+                        SetTask(new RestTask(bed, 5f));
+                    }
+                    else
+                    {
+                        StartWander();
+                    }
+                }
+                else
+                {
+                    StartWander();
+                }
             }
         }
         if (currentTask is BuildWallTask bw)
@@ -125,6 +144,11 @@ public class Colonist : MonoBehaviour
         else if (currentTask is HaulLogTask hl)
         {
             HandleHaulLogTask(hl);
+            return;
+        }
+        else if (currentTask is RestTask rt)
+        {
+            HandleRestTask(rt);
             return;
         }
 
@@ -320,6 +344,44 @@ public class Colonist : MonoBehaviour
                 else
                 {
                     MoveAlongPath();
+                }
+                break;
+        }
+    }
+
+    void HandleRestTask(RestTask task)
+    {
+        switch (task.stage)
+        {
+            case RestTask.Stage.MoveToBed:
+                if (task.bed == null)
+                {
+                    currentTask = null;
+                    activity = "Idle";
+                    return;
+                }
+
+                if (path == null || pathIndex >= path.Count)
+                {
+                    task.stage = RestTask.Stage.Rest;
+                    actionTimer = task.restTime;
+                    activity = "Resting";
+                }
+                else
+                {
+                    MoveAlongPath();
+                }
+                break;
+
+            case RestTask.Stage.Rest:
+                actionTimer -= Time.deltaTime;
+                fatigue = Mathf.Clamp01(fatigue - Time.deltaTime / task.restTime);
+                if (actionTimer <= 0f)
+                {
+                    if (task.bed != null)
+                        task.bed.Reserved = false;
+                    currentTask = null;
+                    activity = "Idle";
                 }
                 break;
         }

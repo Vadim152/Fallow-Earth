@@ -145,6 +145,33 @@ public class BuildMenuController : MonoBehaviour
         dRt.anchorMax = Vector2.one;
         dRt.offsetMin = Vector2.zero;
         dRt.offsetMax = Vector2.zero;
+
+        GameObject bedObj = new GameObject("BedButton");
+        bedObj.transform.SetParent(menuPanel.transform, false);
+        Image bedImg = bedObj.AddComponent<Image>();
+        bedImg.color = new Color(0.9f, 0.9f, 0.9f, 1f);
+        Button bedBtn = bedObj.AddComponent<Button>();
+        bedBtn.targetGraphic = bedImg;
+        bedBtn.onClick.AddListener(() =>
+        {
+            BuildBedController ctrl = FindObjectOfType<BuildBedController>();
+            if (ctrl != null)
+                ctrl.TogglePlacing();
+            ToggleMenu();
+        });
+
+        GameObject bTxtObj = new GameObject("Text");
+        bTxtObj.transform.SetParent(bedObj.transform, false);
+        Text bTxt = bTxtObj.AddComponent<Text>();
+        bTxt.text = "\u041a\u0440\u043e\u0432\u0430\u0442\u044c"; // "Кровать"
+        bTxt.alignment = TextAnchor.MiddleCenter;
+        bTxt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        bTxt.color = Color.black;
+        RectTransform bRt = bTxtObj.GetComponent<RectTransform>();
+        bRt.anchorMin = Vector2.zero;
+        bRt.anchorMax = Vector2.one;
+        bRt.offsetMin = Vector2.zero;
+        bRt.offsetMax = Vector2.zero;
     }
 
     void ToggleMenu()
