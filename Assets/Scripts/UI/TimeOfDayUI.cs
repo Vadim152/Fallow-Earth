@@ -49,18 +49,8 @@ public class TimeOfDayUI : MonoBehaviour
             minutesPerDay = cycle.minutesPerDay;
 
         float t = (Time.time / (minutesPerDay * 60f)) % 1f;
-        float hour = t * 24f;
+        int hour = Mathf.FloorToInt(t * 24f);
 
-        string phase;
-        if (hour >= 5f && hour < 10f)
-            phase = "\u0423\u0442\u0440\u043e"; // "Утро"
-        else if (hour >= 10f && hour < 17f)
-            phase = "\u0414\u0435\u043d\u044c"; // "День"
-        else if (hour >= 17f && hour < 22f)
-            phase = "\u0412\u0435\u0447\u0435\u0440"; // "Вечер"
-        else
-            phase = "\u041D\u043E\u0447\u044C"; // "Ночь"
-
-        text.text = phase;
+        text.text = hour.ToString("00") + ":00";
     }
 }
