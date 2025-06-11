@@ -65,6 +65,10 @@ public class Colonist : MonoBehaviour
             {
                 path = null;
             }
+            else if (currentTask is HaulLogTask haul && haul.stage == HaulLogTask.Stage.MoveToLog)
+            {
+                path = FindPath(Vector2Int.FloorToInt(transform.position), Vector2Int.FloorToInt(haul.log.transform.position));
+            }
             else
             {
                 path = FindPath(Vector2Int.FloorToInt(transform.position), Vector2Int.FloorToInt(currentTask.target));
@@ -94,6 +98,10 @@ public class Colonist : MonoBehaviour
                 {
                     path = null;
                 }
+                else if (currentTask is HaulLogTask haul && haul.stage == HaulLogTask.Stage.MoveToLog)
+                {
+                    path = FindPath(Vector2Int.FloorToInt(transform.position), Vector2Int.FloorToInt(haul.log.transform.position));
+                }
                 else
                 {
                     path = FindPath(Vector2Int.FloorToInt(transform.position), Vector2Int.FloorToInt(currentTask.target));
@@ -109,6 +117,11 @@ public class Colonist : MonoBehaviour
         if (currentTask is BuildWallTask bw)
         {
             HandleBuildWallTask(bw);
+            return;
+        }
+        else if (currentTask is HaulLogTask hl)
+        {
+            HandleHaulLogTask(hl);
             return;
         }
 
@@ -257,6 +270,49 @@ public class Colonist : MonoBehaviour
                     {
                         task.stage = BuildWallTask.Stage.CollectWood;
                     }
+                }
+                break;
+        }
+    }
+
+    void HandleHaulLogTask(HaulLogTask task)
+    {
+        switch (task.stage)
+        {
+            case HaulLogTask.Stage.MoveToLog:
+                if (task.log == null)
+                {
+                    currentTask = null;
+                    activity = "Idle";
+                    return;
+                }
+
+                if (path == null || pathIndex >= path.Count)
+                {
+                    path = FindPath(Vector2Int.FloorToInt(transform.position), task.targetCell);
+                    pathIndex = 0;
+                    task.stage = HaulLogTask.Stage.MoveToZone;
+                }
+                else
+                {
+                    MoveAlongPath();
+                }
+                break;
+
+            case HaulLogTask.Stage.MoveToZone:
+                if (path == null || pathIndex >= path.Count)
+                {
+                    if (task.log != null)
+                    {
+                        ResourceManager.AddWood(task.log.Amount);
+                        Object.Destroy(task.log.gameObject);
+                    }
+                    currentTask = null;
+                    activity = "Idle";
+                }
+                else
+                {
+                    MoveAlongPath();
                 }
                 break;
         }

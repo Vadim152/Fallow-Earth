@@ -12,8 +12,22 @@ public class TaskManager : MonoBehaviour
 
     public Task GetNextTask()
     {
-        if (tasks.Count == 0)
-            return null;
-        return tasks.Dequeue();
+        if (tasks.Count > 0)
+            return tasks.Dequeue();
+
+        if (StockpileZone.HasAny)
+        {
+            var logs = GameObject.FindObjectsOfType<WoodLog>();
+            foreach (var l in logs)
+            {
+                if (l != null && !l.Reserved)
+                {
+                    Vector2Int target = StockpileZone.GetClosestCell(l.transform.position);
+                    return new HaulLogTask(l, target);
+                }
+            }
+        }
+
+        return null;
     }
 }

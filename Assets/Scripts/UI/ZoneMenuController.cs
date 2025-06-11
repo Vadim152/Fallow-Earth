@@ -3,6 +3,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
+// Required for stockpile zone placement
+using System.Collections.Generic;
+
 public class ZoneMenuController : MonoBehaviour
 {
     private Canvas canvas;
@@ -104,6 +107,15 @@ public class ZoneMenuController : MonoBehaviour
             bImg.color = new Color(0.9f, 0.9f, 0.9f, 1f);
             Button bBtn = bObj.AddComponent<Button>();
             bBtn.targetGraphic = bImg;
+            if (i == 0)
+            {
+                bBtn.onClick.AddListener(() => {
+                    StockpileZoneController ctrl = FindObjectOfType<StockpileZoneController>();
+                    if (ctrl != null)
+                        ctrl.TogglePlacing();
+                    ToggleMenu();
+                });
+            }
 
             GameObject tObj = new GameObject("Text");
             tObj.transform.SetParent(bObj.transform, false);
