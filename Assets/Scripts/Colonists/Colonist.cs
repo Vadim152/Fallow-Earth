@@ -25,6 +25,9 @@ public class Colonist : MonoBehaviour
     private Rigidbody2D rb;
     private bool wandering;
     private float actionTimer;
+    private bool mentalBreak;
+    private float breakTimer;
+    public float breakDuration = 8f;
 
     public bool IsBusy => currentTask != null;
 
@@ -35,6 +38,8 @@ public class Colonist : MonoBehaviour
         baseMoveSpeed = moveSpeed;
 
         actionTimer = 0f;
+        mentalBreak = false;
+        breakTimer = 0f;
 
         if (GetComponent<SpriteRenderer>() == null)
         {
@@ -97,6 +102,29 @@ public class Colonist : MonoBehaviour
     void Update()
     {
         UpdateNeeds();
+        if (!mentalBreak && mood < 0.2f)
+        {
+            mentalBreak = true;
+            breakTimer = breakDuration;
+            CancelTasks();
+            StartWander();
+            activity = "Panicking";
+        }
+
+        if (mentalBreak)
+        {
+            breakTimer -= Time.deltaTime;
+            if (path == null || pathIndex >= path.Count)
+                StartWander();
+            if (breakTimer <= 0f && mood >= 0.3f)
+            {
+                mentalBreak = false;
+                CancelTasks();
+            }
+            MoveAlongPath();
+            return;
+        }
+
         if (currentTask == null)
         {
             currentTask = taskManager != null ? taskManager.GetNextTask() : null;
