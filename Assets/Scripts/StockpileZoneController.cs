@@ -30,13 +30,10 @@ public class StockpileZoneController : MonoBehaviour
         if (!placing || cells == null || cells.Count == 0)
             return;
 
-        if (map != null)
-        {
-            map.BeginNewZone();
-            foreach (var c in cells)
-                map.SetZone(c.x, c.y);
-        }
-
+        // The AreaSelectionController already created the visible zone
+        // overlays when the area was selected. Here we simply register
+        // the list of cells as a stockpile zone so colonists know where
+        // to haul resources.
         StockpileZone.Create(cells);
         placing = false;
     }
