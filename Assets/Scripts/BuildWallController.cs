@@ -67,8 +67,6 @@ public class BuildWallController : MonoBehaviour
         taskManager.AddTask(new BuildWallTask(cell, 1f, 10, c =>
         {
             map.BuildWallFromFrame(cell.x, cell.y);
-            if (c != null)
-                c.carryingWood -= 10;
         }));
     }
 }
