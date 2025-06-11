@@ -200,6 +200,8 @@ public class Colonist : MonoBehaviour
                         WoodLog chosen = null;
                         foreach (var l in logs)
                         {
+                            if (l.Reserved)
+                                continue;
                             float d = Vector2.Distance(transform.position, l.transform.position);
                             if (d < best)
                             {
@@ -212,6 +214,7 @@ public class Colonist : MonoBehaviour
                             activity = "Idle";
                             return;
                         }
+                        chosen.Reserved = true;
                         task.targetLog = chosen;
                         path = FindPath(Vector2Int.FloorToInt(transform.position), Vector2Int.FloorToInt(chosen.transform.position));
                         pathIndex = 0;
