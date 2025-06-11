@@ -121,7 +121,14 @@ public class TreeChopController : MonoBehaviour
             screenPos = Input.mousePosition;
         }
 
-        bool pointerOverUI = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+        bool pointerOverUI = false;
+        if (EventSystem.current != null)
+        {
+            if (Input.touchSupported && Input.touchCount > 0)
+                pointerOverUI = EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId);
+            else
+                pointerOverUI = EventSystem.current.IsPointerOverGameObject();
+        }
 
         if (clicked && !pointerOverUI)
         {
