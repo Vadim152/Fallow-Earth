@@ -28,8 +28,12 @@ public class BottomLeftMenuController : MonoBehaviour
         VerticalLayoutGroup layout = panelObj.AddComponent<VerticalLayoutGroup>();
         layout.spacing = 10f;
         layout.childAlignment = TextAnchor.LowerLeft;
-        layout.childForceExpandWidth = false;
-        layout.childForceExpandHeight = false;
+        // Force the layout group to give each button a size so they're visible
+        // immediately when the panel is created. Without this Unity may collapse
+        // the children to zero height which hides the buttons until the user
+        // manually toggles these options in the inspector.
+        layout.childForceExpandWidth = true;
+        layout.childForceExpandHeight = true;
         layout.reverseArrangement = true;
 
         // Ensure the panel resizes to fit its children so the buttons remain visible
