@@ -66,3 +66,5 @@ For simple drag panning without zooming, use the `CameraDragController` script. 
 ## Colonist Needs
 
 Colonists gradually become hungry and tired over time. Hunger and fatigue both reduce movement speed and lower mood. These needs are visible on the colonist info card and update automatically each frame.
+
+Colonists will seek out a constructed bed when their fatigue grows high. Resting in a bed slowly decreases fatigue over several seconds. Beds are built from the construction menu and cost ten wood, just like walls and doors.

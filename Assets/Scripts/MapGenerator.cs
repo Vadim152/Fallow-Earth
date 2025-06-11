@@ -280,6 +280,28 @@ public class MapGenerator : MonoBehaviour
         Door.Create(new Vector2(x + 0.5f, y + 0.5f));
     }
 
+    public void PlaceBedFrame(int x, int y)
+    {
+        if (frameTilemap == null || !IsPassable(x, y) || HasWall(x, y) || HasDoor(x, y))
+            return;
+        frameTilemap.SetTile(new Vector3Int(x, y, 0), frameTile);
+    }
+
+    public bool HasBedFrame(int x, int y)
+    {
+        if (frameTilemap == null || x < 0 || x >= width || y < 0 || y >= height)
+            return false;
+        return frameTilemap.GetTile(new Vector3Int(x, y, 0)) == frameTile;
+    }
+
+    public void BuildBedFromFrame(int x, int y)
+    {
+        if (!HasBedFrame(x, y))
+            return;
+        frameTilemap.SetTile(new Vector3Int(x, y, 0), null);
+        Bed.Create(new Vector2(x + 0.5f, y + 0.5f));
+    }
+
     public bool HasDoor(int x, int y)
     {
         Vector2 p = new Vector2(x + 0.5f, y + 0.5f);
@@ -287,6 +309,18 @@ public class MapGenerator : MonoBehaviour
         foreach (var col in cols)
         {
             if (col != null && col.GetComponent<Door>() != null)
+                return true;
+        }
+        return false;
+    }
+
+    public bool HasBed(int x, int y)
+    {
+        Vector2 p = new Vector2(x + 0.5f, y + 0.5f);
+        Collider2D[] cols = Physics2D.OverlapPointAll(p);
+        foreach (var col in cols)
+        {
+            if (col != null && col.GetComponent<Bed>() != null)
                 return true;
         }
         return false;
