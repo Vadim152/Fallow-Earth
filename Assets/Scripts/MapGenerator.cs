@@ -282,8 +282,14 @@ public class MapGenerator : MonoBehaviour
 
     public bool HasDoor(int x, int y)
     {
-        Collider2D col = Physics2D.OverlapPoint(new Vector2(x + 0.5f, y + 0.5f));
-        return col != null && col.GetComponent<Door>() != null;
+        Vector2 p = new Vector2(x + 0.5f, y + 0.5f);
+        Collider2D[] cols = Physics2D.OverlapPointAll(p);
+        foreach (var col in cols)
+        {
+            if (col != null && col.GetComponent<Door>() != null)
+                return true;
+        }
+        return false;
     }
 
     private Tile CreateColoredTile(Color color)
