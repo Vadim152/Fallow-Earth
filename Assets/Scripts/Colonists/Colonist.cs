@@ -6,6 +6,7 @@ using UnityEngine;
 public class Colonist : MonoBehaviour
 {
     public float moveSpeed = 10f;
+    private float baseMoveSpeed;
 
     // basic stats for UI display
     [Range(0f,1f)] public float mood = 0.75f;
@@ -29,6 +30,7 @@ public class Colonist : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         rb.gravityScale = 0f;
+        baseMoveSpeed = moveSpeed;
 
         actionTimer = 0f;
 
@@ -88,6 +90,7 @@ public class Colonist : MonoBehaviour
 
     void Update()
     {
+        UpdateNeeds();
         if (currentTask == null)
         {
             currentTask = taskManager != null ? taskManager.GetNextTask() : null;
@@ -176,7 +179,8 @@ public class Colonist : MonoBehaviour
         }
         else
         {
-            rb.MovePosition(rb.position + dir.normalized * moveSpeed * Time.deltaTime);
+            float speedMod = 1f - Mathf.Clamp01((hunger + fatigue) * 0.5f);
+            rb.MovePosition(rb.position + dir.normalized * baseMoveSpeed * speedMod * Time.deltaTime);
         }
     }
 
@@ -416,6 +420,14 @@ public class Colonist : MonoBehaviour
                 }
             }
         }
+    }
+
+    void UpdateNeeds()
+    {
+        float dt = Time.deltaTime / 60f;
+        hunger = Mathf.Clamp01(hunger + dt);
+        fatigue = Mathf.Clamp01(fatigue + dt * 0.5f);
+        mood = Mathf.Clamp01(1f - (hunger + fatigue) * 0.5f);
     }
 
     Sprite CreateColoredSprite(Color color)
