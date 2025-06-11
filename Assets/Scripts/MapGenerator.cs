@@ -292,7 +292,8 @@ public class MapGenerator : MonoBehaviour
 
     public void PlaceWallFrame(int x, int y)
     {
-        if (frameTilemap == null || !IsPassable(x, y) || HasWall(x, y))
+        if (frameTilemap == null || !IsPassable(x, y) || HasWall(x, y)
+            || HasDoor(x, y) || HasBed(x, y) || HasDoorFrame(x, y) || HasBedFrame(x, y))
             return;
         frameTilemap.SetTile(new Vector3Int(x, y, 0), frameTile);
     }
