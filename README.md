@@ -48,6 +48,10 @@ Alongside wooden walls you can now place wooden doors that automatically open wh
 
 `ZoneMenuController` adds a **Зоны** button to the UI. Tapping it displays a 2x4 grid of zone buttons. The first entry is labeled **Склад** (warehouse) with seven additional placeholder buttons.
 
+## Unified Bottom Left Menu
+
+`BottomLeftMenuController` groups the **Срубить**, **Строительство** and **Зоны** buttons inside a single vertical panel. This matches RimWorld's bottom left layout and keeps all commands in one place.
+
 ## Mobile Camera Orientation
 
 `CameraBootstrap` now keeps the main camera aligned with the current screen resolution. A small `CameraAutoFitter` component updates the camera whenever the device orientation or window size changes and the `CameraPanZoomController` component is added automatically if it is missing. This prevents stretching on wide or tall displays and works on both desktop and mobile devices.
