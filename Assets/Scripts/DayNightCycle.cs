@@ -1,0 +1,55 @@
+using UnityEngine;
+using UnityEngine.UI;
+
+/// <summary>
+/// Simple day/night cycle that darkens the screen at night.
+/// </summary>
+public class DayNightCycle : MonoBehaviour
+{
+    [Tooltip("Minutes of real time for a full day cycle")]
+    public float minutesPerDay = 2f;
+
+    private Image overlay;
+
+    void Start()
+    {
+        SetupOverlay();
+    }
+
+    void SetupOverlay()
+    {
+        Canvas canvas = FindObjectOfType<Canvas>();
+        if (canvas == null)
+        {
+            GameObject c = new GameObject("Canvas");
+            canvas = c.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            c.AddComponent<CanvasScaler>();
+            c.AddComponent<GraphicRaycaster>();
+        }
+
+        GameObject o = new GameObject("NightOverlay");
+        o.transform.SetParent(canvas.transform, false);
+        overlay = o.AddComponent<Image>();
+        overlay.color = new Color(0f, 0f, 0f, 0f);
+
+        RectTransform rt = overlay.GetComponent<RectTransform>();
+        rt.anchorMin = Vector2.zero;
+        rt.anchorMax = Vector2.one;
+        rt.offsetMin = Vector2.zero;
+        rt.offsetMax = Vector2.zero;
+    }
+
+    void Update()
+    {
+        float t = (Time.time / (minutesPerDay * 60f)) % 1f;
+        float phase = Mathf.Cos(t * Mathf.PI * 2f) * 0.5f + 0.5f; // 1 at noon, 0 at midnight
+        float alpha = Mathf.Clamp01(1f - phase);
+        if (overlay != null)
+        {
+            Color c = overlay.color;
+            c.a = alpha * 0.5f;
+            overlay.color = c;
+        }
+    }
+}
