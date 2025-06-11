@@ -86,6 +86,14 @@ public class Colonist : MonoBehaviour
             {
                 path = FindPath(Vector2Int.FloorToInt(transform.position), Vector2Int.FloorToInt(currentTask.target));
             }
+
+            if (path == null)
+            {
+                currentTask = null;
+                StartWander();
+                return;
+            }
+
             pathIndex = 0;
             wandering = false;
             activity = "Moving";
@@ -143,8 +151,17 @@ public class Colonist : MonoBehaviour
                 {
                     path = FindPath(Vector2Int.FloorToInt(transform.position), Vector2Int.FloorToInt(currentTask.target));
                 }
-                pathIndex = 0;
-                wandering = false;
+
+                if (path == null)
+                {
+                    currentTask = null;
+                    StartWander();
+                }
+                else
+                {
+                    pathIndex = 0;
+                    wandering = false;
+                }
             }
             else if (path == null || pathIndex >= path.Count)
             {
@@ -434,11 +451,9 @@ public class Colonist : MonoBehaviour
 
     List<Vector2Int> FindPath(Vector2Int start, Vector2Int goal)
     {
-        var result = new List<Vector2Int>();
         if (map == null)
         {
-            result.Add(goal);
-            return result;
+            return new List<Vector2Int> { goal };
         }
 
         var open = new List<Node>();
@@ -484,8 +499,8 @@ public class Colonist : MonoBehaviour
             }
         }
 
-        result.Add(goal);
-        return result;
+        // no path found
+        return null;
     }
 
     int Heuristic(Vector2Int a, Vector2Int b)
@@ -518,7 +533,7 @@ public class Colonist : MonoBehaviour
             if (map.IsPassable(x, y))
             {
                 path = FindPath(start, new Vector2Int(x, y));
-                if (path.Count > 0)
+                if (path != null && path.Count > 0)
                 {
                     pathIndex = 0;
                     wandering = true;
