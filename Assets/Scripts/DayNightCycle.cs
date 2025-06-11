@@ -42,8 +42,10 @@ public class DayNightCycle : MonoBehaviour
 
     void Update()
     {
+        // Fraction of the current day (0..1) where 0 is midnight
         float t = (Time.time / (minutesPerDay * 60f)) % 1f;
-        float phase = Mathf.Cos(t * Mathf.PI * 2f) * 0.5f + 0.5f; // 1 at noon, 0 at midnight
+        // Shift the cosine so that t=0 corresponds to midnight rather than noon
+        float phase = Mathf.Cos((t - 0.5f) * Mathf.PI * 2f) * 0.5f + 0.5f; // 1 at noon, 0 at midnight
         float alpha = Mathf.Clamp01(1f - phase);
         if (overlay != null)
         {
