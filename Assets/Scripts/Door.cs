@@ -10,7 +10,6 @@ public class Door : MonoBehaviour
     static Sprite doorSprite;
     public float closeDelay = 1f;
 
-    bool open;
     SpriteRenderer sr;
     Coroutine closeRoutine;
 
@@ -58,7 +57,6 @@ public class Door : MonoBehaviour
 
     void Open()
     {
-        open = true;
         sr.color = new Color(1f, 1f, 1f, 0.3f);
         if (closeRoutine != null)
         {
@@ -70,7 +68,6 @@ public class Door : MonoBehaviour
     IEnumerator CloseAfterDelay()
     {
         yield return new WaitForSeconds(closeDelay);
-        open = false;
         sr.color = Color.white;
     }
 }
