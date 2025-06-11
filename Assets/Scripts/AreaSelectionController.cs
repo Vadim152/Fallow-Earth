@@ -203,8 +203,13 @@ public class AreaSelectionController : MonoBehaviour
         {
             for (int y = yMin; y <= yMax; y++)
             {
+                bool passable = map == null || map.IsPassable(x, y);
+                if (!passable)
+                    continue;
+
                 var cell = new Vector2Int(x, y);
                 cells.Add(cell);
+
                 if (map != null)
                 {
                     map.SetZone(x, y);
