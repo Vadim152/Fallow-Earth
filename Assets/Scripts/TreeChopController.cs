@@ -36,12 +36,7 @@ public class TreeChopController : MonoBehaviour
             c.AddComponent<GraphicRaycaster>();
         }
 
-        if (FindObjectOfType<EventSystem>() == null)
-        {
-            GameObject es = new GameObject("EventSystem");
-            es.AddComponent<EventSystem>();
-            es.AddComponent<StandaloneInputModule>();
-        }
+        // EventSystem is now created by EventSystemBootstrap
 
         GameObject buttonObj = new GameObject("ChopTreesButton");
         buttonObj.transform.SetParent(canvas.transform, false);
