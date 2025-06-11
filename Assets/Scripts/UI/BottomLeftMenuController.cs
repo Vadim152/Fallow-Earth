@@ -35,11 +35,6 @@ public class BottomLeftMenuController : MonoBehaviour
         layout.childForceExpandWidth = true;
         layout.childForceExpandHeight = true;
         layout.reverseArrangement = true;
-
-        // Ensure the panel resizes to fit its children so the buttons remain visible
-        ContentSizeFitter fitter = panelObj.AddComponent<ContentSizeFitter>();
-        fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
-        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
     }
 
     IEnumerator SetupButtons()
