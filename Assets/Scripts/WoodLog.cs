@@ -9,6 +9,7 @@ public class WoodLog : MonoBehaviour
     static Sprite woodSprite;
 
     public int Amount { get; private set; }
+    public bool Reserved { get; set; }
 
     /// <summary>
     /// Spawns a new wood log at the given world position.
@@ -31,6 +32,7 @@ public class WoodLog : MonoBehaviour
 
         WoodLog log = go.AddComponent<WoodLog>();
         log.Amount = amount;
+        log.Reserved = false;
         log.CreateText();
         return log;
     }

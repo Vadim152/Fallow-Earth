@@ -1,10 +1,17 @@
 using UnityEngine;
+using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
 public class AreaSelectionController : MonoBehaviour
 {
     public static bool IsSelecting { get; private set; }
+
+    /// <summary>
+    /// Fired when an area has been selected. Provides the list
+    /// of map cells contained within the selection box.
+    /// </summary>
+    public static event System.Action<List<Vector2Int>> AreaSelected;
 
     public float holdDelay = 0.3f;
     public float moveTolerance = 10f;
@@ -190,10 +197,14 @@ public class AreaSelectionController : MonoBehaviour
         if (map == null)
             zoneGroup = new GameObject("Zone");
 
+        var cells = new List<Vector2Int>();
+
         for (int x = xMin; x <= xMax; x++)
         {
             for (int y = yMin; y <= yMax; y++)
             {
+                var cell = new Vector2Int(x, y);
+                cells.Add(cell);
                 if (map != null)
                 {
                     map.SetZone(x, y);
@@ -206,6 +217,8 @@ public class AreaSelectionController : MonoBehaviour
                 }
             }
         }
+
+        AreaSelected?.Invoke(cells);
     }
 
     Color GenerateZoneColor()
