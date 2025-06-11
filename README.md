@@ -37,10 +37,12 @@ A simple chopping tool is available via the `TreeChopController` script. When th
 Chopped trees now drop a `WoodLog` object at their position. Each log displays how much wood was gathered (between 30 and 50).
 
 Colonists must physically collect these logs to build. Constructing a wall consumes **10** wood. When a frame is placed, a colonist will haul a nearby log to the site and spend time building the final wall.
+Doors are built the same way and open automatically when colonists pass through.
 
 ## Building Menu
 
 The `BuildMenuController` script creates a **Строительство** button. Pressing it opens a panel containing eight building buttons laid out in a 2x4 grid. The panel smoothly scales in and out when toggled so the interface feels more responsive.
+Alongside wooden walls you can now place wooden doors that automatically open when colonists approach.
 
 ## Zone Menu
 
