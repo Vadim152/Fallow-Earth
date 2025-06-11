@@ -26,6 +26,8 @@ public class Colonist : MonoBehaviour
     private bool wandering;
     private float actionTimer;
 
+    public bool IsBusy => currentTask != null;
+
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -138,6 +140,9 @@ public class Colonist : MonoBehaviour
                         StartWander();
                     }
                 }
+                else if (social < 0.4f && TryStartSocialize())
+                {
+                }
                 else
                 {
                     StartWander();
@@ -170,6 +175,8 @@ public class Colonist : MonoBehaviour
                         actionTimer = timed.duration;
                     if (currentTask is EatBerryTask)
                         activity = "Eating";
+                    else if (currentTask is SocializeTask)
+                        activity = "Talking";
                     actionTimer -= Time.deltaTime;
                     if (actionTimer <= 0f)
                     {
@@ -494,12 +501,42 @@ public class Colonist : MonoBehaviour
         }
     }
 
+    bool TryStartSocialize()
+    {
+        Colonist[] all = FindObjectsOfType<Colonist>();
+        Colonist best = null;
+        float bestDist = 3f; // max range to start conversation
+        foreach (var c in all)
+        {
+            if (c == this || c.IsBusy)
+                continue;
+            float d = Vector2.Distance(transform.position, c.transform.position);
+            if (d < bestDist)
+            {
+                bestDist = d;
+                best = c;
+            }
+        }
+
+        if (best != null)
+        {
+            float dur = 2f;
+            var taskA = new SocializeTask(best, dur, col => col.social = Mathf.Clamp01(col.social + 0.5f));
+            var taskB = new SocializeTask(this, dur, col => col.social = Mathf.Clamp01(col.social + 0.5f));
+            SetTask(taskA);
+            best.SetTask(taskB);
+            return true;
+        }
+        return false;
+    }
+
     void UpdateNeeds()
     {
         float dt = Time.deltaTime / 60f;
         hunger = Mathf.Clamp01(hunger + dt);
         fatigue = Mathf.Clamp01(fatigue + dt * 0.5f);
-        mood = Mathf.Clamp01(1f - (hunger + fatigue) * 0.5f);
+        social = Mathf.Clamp01(social - dt * 0.1f);
+        mood = Mathf.Clamp01(1f - (hunger + fatigue) * 0.5f - (1f - social) * 0.2f);
     }
 
     Sprite CreateColoredSprite(Color color)
