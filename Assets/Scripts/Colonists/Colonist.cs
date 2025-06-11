@@ -24,7 +24,6 @@ public class Colonist : MonoBehaviour
     private Rigidbody2D rb;
     private bool wandering;
     private float actionTimer;
-    public int carryingWood;
 
     void Awake()
     {
@@ -173,7 +172,7 @@ public class Colonist : MonoBehaviour
         switch (task.stage)
         {
             case BuildWallTask.Stage.CollectWood:
-                if (carryingWood >= task.woodNeeded)
+                if (ResourceManager.Instance != null && ResourceManager.Instance.Wood >= task.woodNeeded)
                 {
                     task.stage = BuildWallTask.Stage.MoveToSite;
                     path = FindPath(Vector2Int.FloorToInt(transform.position), task.cell);
@@ -206,12 +205,19 @@ public class Colonist : MonoBehaviour
                     }
                     else if (path == null || pathIndex >= path.Count)
                     {
-                        carryingWood += task.targetLog.Amount;
+                        ResourceManager.AddWood(task.targetLog.Amount);
                         Object.Destroy(task.targetLog.gameObject);
                         task.targetLog = null;
-                        task.stage = BuildWallTask.Stage.MoveToSite;
-                        path = FindPath(Vector2Int.FloorToInt(transform.position), task.cell);
-                        pathIndex = 0;
+                        if (ResourceManager.Instance != null && ResourceManager.Instance.Wood >= task.woodNeeded)
+                        {
+                            task.stage = BuildWallTask.Stage.MoveToSite;
+                            path = FindPath(Vector2Int.FloorToInt(transform.position), task.cell);
+                            pathIndex = 0;
+                        }
+                        else
+                        {
+                            task.targetLog = null;
+                        }
                     }
                 }
                 MoveAlongPath();
@@ -220,8 +226,16 @@ public class Colonist : MonoBehaviour
             case BuildWallTask.Stage.MoveToSite:
                 if (path == null || pathIndex >= path.Count)
                 {
-                    task.stage = BuildWallTask.Stage.Build;
-                    actionTimer = task.buildTime;
+                    if (ResourceManager.Instance != null && ResourceManager.Instance.Wood >= task.woodNeeded)
+                    {
+                        task.stage = BuildWallTask.Stage.Build;
+                        actionTimer = task.buildTime;
+                    }
+                    else
+                    {
+                        task.stage = BuildWallTask.Stage.CollectWood;
+                        path = null;
+                    }
                 }
                 else
                 {
@@ -233,10 +247,16 @@ public class Colonist : MonoBehaviour
                 actionTimer -= Time.deltaTime;
                 if (actionTimer <= 0f)
                 {
-                    carryingWood -= task.woodNeeded;
-                    task.onComplete?.Invoke(this);
-                    currentTask = null;
-                    activity = "Idle";
+                    if (ResourceManager.UseWood(task.woodNeeded))
+                    {
+                        task.onComplete?.Invoke(this);
+                        currentTask = null;
+                        activity = "Idle";
+                    }
+                    else
+                    {
+                        task.stage = BuildWallTask.Stage.CollectWood;
+                    }
                 }
                 break;
         }
