@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using System.Collections.Generic;
 
 public class MapGenerator : MonoBehaviour
 {
@@ -25,6 +26,8 @@ public class MapGenerator : MonoBehaviour
     public float treeProbability = 0.1f;
     [Range(0f,1f)]
     public float berryProbability = 0.05f;
+    [Tooltip("Seconds for a berry bush to regrow after being harvested")]
+    public float berryGrowTime = 60f;
 
     [Header("Noise Settings")]
     public float noiseScale = 0.1f;
@@ -52,6 +55,7 @@ public class MapGenerator : MonoBehaviour
     public Color CurrentZoneColor => currentZoneColor;
 
     private bool[,] passable;
+    private Dictionary<Vector2Int, float> berryTimers = new Dictionary<Vector2Int, float>();
 
     /// <summary>
     /// Prepare a new zone tile using a random dim color.
@@ -135,6 +139,7 @@ public class MapGenerator : MonoBehaviour
     public void Generate()
     {
         passable = new bool[width, height];
+        berryTimers.Clear();
         if (groundTilemap != null)
             groundTilemap.ClearAllTiles();
         if (treeTilemap != null)
@@ -245,6 +250,8 @@ public class MapGenerator : MonoBehaviour
         berryTilemap.SetTile(new Vector3Int(x, y, 0), null);
         if (passable != null && x < passable.GetLength(0) && y < passable.GetLength(1))
             passable[x, y] = true;
+        var cell = new Vector2Int(x, y);
+        berryTimers[cell] = berryGrowTime;
     }
 
     public bool TryFindClosestBerryCell(Vector2 pos, out Vector2Int cell)
@@ -438,6 +445,30 @@ public class MapGenerator : MonoBehaviour
             cam.orthographic = true;
             cam.transform.position = new Vector3(width / 2f, height / 2f, -10f);
             cam.orthographicSize = Mathf.Max(width, height) / 2f;
+        }
+    }
+
+    void Update()
+    {
+        if (berryTimers.Count == 0)
+            return;
+
+        var keys = new List<Vector2Int>(berryTimers.Keys);
+        foreach (var cell in keys)
+        {
+            float time = berryTimers[cell] - Time.deltaTime;
+            if (time <= 0f)
+            {
+                if (berryTilemap != null && berryTile != null)
+                    berryTilemap.SetTile(new Vector3Int(cell.x, cell.y, 0), berryTile);
+                if (passable != null && cell.x < width && cell.y < height)
+                    passable[cell.x, cell.y] = false;
+                berryTimers.Remove(cell);
+            }
+            else
+            {
+                berryTimers[cell] = time;
+            }
         }
     }
 }
