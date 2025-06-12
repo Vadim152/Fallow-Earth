@@ -110,7 +110,7 @@ public class Colonist : MonoBehaviour
     void Update()
     {
         UpdateNeeds();
-        if (!mentalBreak && mood < 0.2f)
+        if (!mentalBreak && (mood < 0.2f || stress > 0.95f))
         {
             mentalBreak = true;
             breakTimer = breakDuration;
@@ -122,9 +122,10 @@ public class Colonist : MonoBehaviour
         if (mentalBreak)
         {
             breakTimer -= Time.deltaTime;
+            stress = Mathf.Clamp01(stress - Time.deltaTime / breakDuration);
             if (path == null || pathIndex >= path.Count)
                 StartWander();
-            if (breakTimer <= 0f && mood >= 0.3f)
+            if (breakTimer <= 0f && mood >= 0.3f && stress <= 0.8f)
             {
                 mentalBreak = false;
                 CancelTasks();
@@ -187,6 +188,17 @@ public class Colonist : MonoBehaviour
                 }
                 else if (social < 0.4f && TryStartSocialize())
                 {
+                }
+                else if (stress > 0.8f)
+                {
+                    if (!TryStartSocialize())
+                    {
+                        Bed bed = Bed.FindAvailable(transform.position);
+                        if (bed != null)
+                            SetTask(new RestTask(bed, 4f));
+                        else
+                            StartWander();
+                    }
                 }
                 else
                 {
@@ -574,9 +586,15 @@ public class Colonist : MonoBehaviour
             float dur = Random.Range(1.5f, 3.5f);
             Vector2 meetPoint = (transform.position + best.transform.position) * 0.5f;
             var taskA = new SocializeTask(best, meetPoint, dur,
-                col => col.social = Mathf.Clamp01(col.social + 0.5f));
+                col => {
+                    col.social = Mathf.Clamp01(col.social + 0.5f);
+                    col.stress = Mathf.Clamp01(col.stress - 0.3f);
+                });
             var taskB = new SocializeTask(this, meetPoint, dur,
-                col => col.social = Mathf.Clamp01(col.social + 0.5f));
+                col => {
+                    col.social = Mathf.Clamp01(col.social + 0.5f);
+                    col.stress = Mathf.Clamp01(col.stress - 0.3f);
+                });
             SetTask(taskA);
             best.SetTask(taskB);
             return true;
@@ -590,7 +608,13 @@ public class Colonist : MonoBehaviour
         hunger = Mathf.Clamp01(hunger + dt);
         fatigue = Mathf.Clamp01(fatigue + dt * 0.5f);
         social = Mathf.Clamp01(social - dt * 0.1f);
-        mood = Mathf.Clamp01(1f - (hunger + fatigue) * 0.5f - (1f - social) * 0.2f);
+        float stressChange = dt * 0.05f;
+        if (currentTask != null && !(currentTask is RestTask) && !(currentTask is SocializeTask))
+            stressChange += dt * 0.1f;
+        if (activity == "Resting" || activity == "Talking")
+            stressChange -= dt * 0.2f;
+        stress = Mathf.Clamp01(stress + stressChange);
+        mood = Mathf.Clamp01(1f - (hunger + fatigue) * 0.5f - (1f - social) * 0.2f - stress * 0.3f);
     }
 
     Sprite CreateColoredSprite(Color color)
