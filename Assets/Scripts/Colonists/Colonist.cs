@@ -266,6 +266,8 @@ public class Colonist : MonoBehaviour
         else
         {
             float speedMod = 1f - Mathf.Clamp01((hunger + fatigue) * 0.5f);
+            if (WeatherSystem.Instance != null)
+                speedMod *= WeatherSystem.Instance.GetMoveSpeedMultiplier();
             rb.MovePosition(rb.position + dir.normalized * baseMoveSpeed * speedMod * Time.deltaTime);
         }
     }
