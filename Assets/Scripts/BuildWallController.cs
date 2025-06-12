@@ -9,6 +9,8 @@ public class BuildWallController : MonoBehaviour
     private TaskManager taskManager;
     private bool placing;
 
+    public bool IsPlacing => placing;
+
     void Start()
     {
         map = FindObjectOfType<MapGenerator>();

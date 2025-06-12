@@ -13,6 +13,7 @@ public class ZoneMenuController : MonoBehaviour
     private bool menuOpen;
     private Coroutine animRoutine;
     private Image toggleButtonImage;
+    private RectTransform toggleButtonRect;
     public Color activeColor = new Color(0.6f, 0.9f, 1f, 1f);
     public Color normalColor = new Color(0.9f, 0.9f, 0.9f, 1f);
 
@@ -112,7 +113,13 @@ public class ZoneMenuController : MonoBehaviour
                 bBtn.onClick.AddListener(() => {
                     StockpileZoneController ctrl = FindObjectOfType<StockpileZoneController>();
                     if (ctrl != null)
+                    {
                         ctrl.TogglePlacing();
+                        if (ctrl.IsPlacing)
+                            CancelActionUI.Show(toggleButtonRect, ctrl.TogglePlacing);
+                        else
+                            CancelActionUI.Hide();
+                    }
                     ToggleMenu();
                 });
             }
@@ -132,12 +139,15 @@ public class ZoneMenuController : MonoBehaviour
         }
     }
 
-    public void AssignToggleButton(Image img)
+    public void AssignToggleButton(Image img, RectTransform rect)
     {
         toggleButtonImage = img;
+        toggleButtonRect = rect;
         if (toggleButtonImage != null)
             toggleButtonImage.color = normalColor;
     }
+
+    public RectTransform ToggleButtonRect => toggleButtonRect;
 
     public void ToggleMenu()
     {

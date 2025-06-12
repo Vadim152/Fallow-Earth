@@ -47,7 +47,7 @@ public class ActionButtonsUI : MonoBehaviour
         Button btn = CreateButton(parent, "\u041f\u0440\u0438\u043a\u0430\u0437\u044b", out img, out rect);
         btn.onClick.AddListener(() => { if (ctrl != null) ctrl.ToggleMenu(); });
         if (ctrl != null)
-            ctrl.AssignToggleButton(img);
+            ctrl.AssignToggleButton(img, rect);
     }
 
     void CreateBuildButton(GameObject parent)
@@ -57,7 +57,7 @@ public class ActionButtonsUI : MonoBehaviour
         Button btn = CreateButton(parent, "\u0421\u0442\u0440\u043e\u0438\u0442\u0435\u043b\u044c\u0441\u0442\u0432\u043e", out img, out rect);
         btn.onClick.AddListener(() => { if (ctrl != null) ctrl.ToggleMenu(); });
         if (ctrl != null)
-            ctrl.AssignToggleButton(img);
+            ctrl.AssignToggleButton(img, rect);
     }
 
     void CreateZoneButton(GameObject parent)
@@ -67,7 +67,7 @@ public class ActionButtonsUI : MonoBehaviour
         Button btn = CreateButton(parent, "\u0417\u043e\u043d\u044b", out img, out rect);
         btn.onClick.AddListener(() => { if (ctrl != null) ctrl.ToggleMenu(); });
         if (ctrl != null)
-            ctrl.AssignToggleButton(img);
+            ctrl.AssignToggleButton(img, rect);
     }
 
     void CreateColonistsButton(GameObject parent)
