@@ -9,6 +9,9 @@ public class BuildMenuController : MonoBehaviour
     private GameObject menuPanel;
     private bool menuOpen;
     private Coroutine animRoutine;
+    private Image toggleButtonImage;
+    public Color activeColor = new Color(0.6f, 0.9f, 1f, 1f);
+    public Color normalColor = new Color(0.9f, 0.9f, 0.9f, 1f);
 
     void Start()
     {
@@ -172,9 +175,18 @@ public class BuildMenuController : MonoBehaviour
         bRt.offsetMax = Vector2.zero;
     }
 
+    public void AssignToggleButton(Image img)
+    {
+        toggleButtonImage = img;
+        if (toggleButtonImage != null)
+            toggleButtonImage.color = normalColor;
+    }
+
     public void ToggleMenu()
     {
         menuOpen = !menuOpen;
+        if (toggleButtonImage != null)
+            toggleButtonImage.color = menuOpen ? activeColor : normalColor;
         if (animRoutine != null)
             StopCoroutine(animRoutine);
         animRoutine = StartCoroutine(MenuAnimation(menuOpen));

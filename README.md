@@ -52,7 +52,7 @@ Clicking a door toggles a *hold open* mode so it stays open after colonists leav
 ## Unified Bottom Left Menu
 
 `BottomLeftMenuController` groups the **Приказы**, **Строительство** and **Зоны** buttons inside a single vertical panel. This matches RimWorld's bottom left layout and keeps all commands in one place.
-All interface buttons now animate slightly when pressed thanks to the new `ButtonPressEffect` component, making taps feel more responsive on both desktop and mobile.
+All interface buttons now animate slightly when pressed thanks to the new `ButtonPressEffect` component, making taps feel more responsive on both desktop and mobile. Menu buttons stay tinted while their panels are open so you can see which menu is currently active.
 
 ## Mobile Camera Orientation
 
