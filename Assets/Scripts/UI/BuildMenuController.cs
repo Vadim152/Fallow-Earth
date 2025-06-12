@@ -41,6 +41,7 @@ public class BuildMenuController : MonoBehaviour
         img.color = new Color(0.8f, 0.8f, 0.8f, 0.9f);
         Button btn = buttonObj.AddComponent<Button>();
         btn.targetGraphic = img;
+        buttonObj.AddComponent<ButtonPressEffect>();
         btn.onClick.AddListener(ToggleMenu);
 
         RectTransform rt = buttonObj.GetComponent<RectTransform>();
@@ -92,6 +93,7 @@ public class BuildMenuController : MonoBehaviour
         wallImg.color = new Color(0.9f, 0.9f, 0.9f, 1f);
         Button wallBtn = wallObj.AddComponent<Button>();
         wallBtn.targetGraphic = wallImg;
+        wallObj.AddComponent<ButtonPressEffect>();
         wallBtn.onClick.AddListener(() =>
         {
             BuildWallController ctrl = FindObjectOfType<BuildWallController>();
@@ -119,6 +121,7 @@ public class BuildMenuController : MonoBehaviour
         doorImg.color = new Color(0.9f, 0.9f, 0.9f, 1f);
         Button doorBtn = doorObj.AddComponent<Button>();
         doorBtn.targetGraphic = doorImg;
+        doorObj.AddComponent<ButtonPressEffect>();
         doorBtn.onClick.AddListener(() =>
         {
             BuildDoorController ctrl = FindObjectOfType<BuildDoorController>();
@@ -146,6 +149,7 @@ public class BuildMenuController : MonoBehaviour
         bedImg.color = new Color(0.9f, 0.9f, 0.9f, 1f);
         Button bedBtn = bedObj.AddComponent<Button>();
         bedBtn.targetGraphic = bedImg;
+        bedObj.AddComponent<ButtonPressEffect>();
         bedBtn.onClick.AddListener(() =>
         {
             BuildBedController ctrl = FindObjectOfType<BuildBedController>();
