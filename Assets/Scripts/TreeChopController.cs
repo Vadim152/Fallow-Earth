@@ -9,6 +9,8 @@ public class TreeChopController : MonoBehaviour
     private MapGenerator map;
     private TaskManager taskManager;
     private bool selecting;
+
+    public bool IsSelecting => selecting;
     private Image buttonImage;
     private RectTransform buttonRect;
     private Coroutine animRoutine;
