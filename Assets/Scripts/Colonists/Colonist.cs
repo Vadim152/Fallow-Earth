@@ -550,24 +550,33 @@ public class Colonist : MonoBehaviour
     {
         Colonist[] all = FindObjectsOfType<Colonist>();
         Colonist best = null;
-        float bestDist = 3f; // max range to start conversation
+        float bestScore = float.MinValue;
         foreach (var c in all)
         {
             if (c == this || c.IsBusy)
                 continue;
-            float d = Vector2.Distance(transform.position, c.transform.position);
-            if (d < bestDist)
+
+            float dist = Vector2.Distance(transform.position, c.transform.position);
+            if (dist > 4f)
+                continue; // too far to bother
+
+            // Prefer partners that also need social interaction
+            float score = (1f - c.social) - dist * 0.25f;
+            if (score > bestScore && c.social < 0.6f)
             {
-                bestDist = d;
+                bestScore = score;
                 best = c;
             }
         }
 
-        if (best != null)
+        if (best != null && (social < 0.6f || best.social < 0.6f))
         {
-            float dur = 2f;
-            var taskA = new SocializeTask(best, dur, col => col.social = Mathf.Clamp01(col.social + 0.5f));
-            var taskB = new SocializeTask(this, dur, col => col.social = Mathf.Clamp01(col.social + 0.5f));
+            float dur = Random.Range(1.5f, 3.5f);
+            Vector2 meetPoint = (transform.position + best.transform.position) * 0.5f;
+            var taskA = new SocializeTask(best, meetPoint, dur,
+                col => col.social = Mathf.Clamp01(col.social + 0.5f));
+            var taskB = new SocializeTask(this, meetPoint, dur,
+                col => col.social = Mathf.Clamp01(col.social + 0.5f));
             SetTask(taskA);
             best.SetTask(taskB);
             return true;
