@@ -12,6 +12,9 @@ public class ZoneMenuController : MonoBehaviour
     private GameObject menuPanel;
     private bool menuOpen;
     private Coroutine animRoutine;
+    private Image toggleButtonImage;
+    public Color activeColor = new Color(0.6f, 0.9f, 1f, 1f);
+    public Color normalColor = new Color(0.9f, 0.9f, 0.9f, 1f);
 
     void Start()
     {
@@ -41,11 +44,12 @@ public class ZoneMenuController : MonoBehaviour
         GameObject buttonObj = new GameObject("ZoneButton");
         buttonObj.transform.SetParent(canvas.transform, false);
         Image img = buttonObj.AddComponent<Image>();
-        img.color = new Color(0.8f, 0.8f, 0.8f, 0.9f);
+        img.color = normalColor;
         Button btn = buttonObj.AddComponent<Button>();
         btn.targetGraphic = img;
         buttonObj.AddComponent<ButtonPressEffect>();
         btn.onClick.AddListener(ToggleMenu);
+        AssignToggleButton(img);
 
         RectTransform rt = buttonObj.GetComponent<RectTransform>();
         rt.anchorMin = new Vector2(0f, 0f);
@@ -128,9 +132,18 @@ public class ZoneMenuController : MonoBehaviour
         }
     }
 
+    public void AssignToggleButton(Image img)
+    {
+        toggleButtonImage = img;
+        if (toggleButtonImage != null)
+            toggleButtonImage.color = normalColor;
+    }
+
     public void ToggleMenu()
     {
         menuOpen = !menuOpen;
+        if (toggleButtonImage != null)
+            toggleButtonImage.color = menuOpen ? activeColor : normalColor;
         if (animRoutine != null)
             StopCoroutine(animRoutine);
         animRoutine = StartCoroutine(MenuAnimation(menuOpen));
