@@ -44,6 +44,7 @@ public class ZoneMenuController : MonoBehaviour
         img.color = new Color(0.8f, 0.8f, 0.8f, 0.9f);
         Button btn = buttonObj.AddComponent<Button>();
         btn.targetGraphic = img;
+        buttonObj.AddComponent<ButtonPressEffect>();
         btn.onClick.AddListener(ToggleMenu);
 
         RectTransform rt = buttonObj.GetComponent<RectTransform>();
@@ -101,6 +102,7 @@ public class ZoneMenuController : MonoBehaviour
             bImg.color = new Color(0.9f, 0.9f, 0.9f, 1f);
             Button bBtn = bObj.AddComponent<Button>();
             bBtn.targetGraphic = bImg;
+            bObj.AddComponent<ButtonPressEffect>();
             if (i == 0)
             {
                 bBtn.onClick.AddListener(() => {

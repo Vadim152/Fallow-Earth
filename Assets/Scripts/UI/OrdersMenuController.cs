@@ -61,6 +61,7 @@ public class OrdersMenuController : MonoBehaviour
         img.color = new Color(0.9f, 0.9f, 0.9f, 1f);
         Button btn = obj.AddComponent<Button>();
         btn.targetGraphic = img;
+        obj.AddComponent<ButtonPressEffect>();
         btn.onClick.AddListener(() => { if (ctrl != null) ctrl.ToggleSelecting(); ToggleMenu(); });
 
         GameObject textObj = new GameObject("Text");

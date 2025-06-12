@@ -80,6 +80,7 @@ public class ActionButtonsUI : MonoBehaviour
         img.color = new Color(0.9f, 0.9f, 0.9f, 1f);
         Button btn = bObj.AddComponent<Button>();
         btn.targetGraphic = img;
+        bObj.AddComponent<ButtonPressEffect>();
 
         GameObject tObj = new GameObject("Text");
         tObj.transform.SetParent(bObj.transform, false);

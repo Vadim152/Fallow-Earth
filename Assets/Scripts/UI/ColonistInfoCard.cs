@@ -130,6 +130,7 @@ public class ColonistInfoCard : MonoBehaviour
         img.color = new Color(0.9f, 0.9f, 0.9f, 1f);
         Button btn = bObj.AddComponent<Button>();
         btn.targetGraphic = img;
+        bObj.AddComponent<ButtonPressEffect>();
         btn.onClick.AddListener(action);
         Text txt = CreateLabel(bObj, label);
         txt.alignment = TextAnchor.MiddleCenter;
