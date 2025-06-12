@@ -33,19 +33,19 @@ public class ActionButtonsUI : MonoBehaviour
         rt.anchoredPosition = new Vector2(20f, 20f);
         rt.sizeDelta = new Vector2(160f, 135f);
 
-        CreateChopButton(panel);
+        CreateOrdersButton(panel);
         CreateBuildButton(panel);
         CreateZoneButton(panel);
         CreateColonistsButton(panel);
     }
 
-    void CreateChopButton(GameObject parent)
+
+    void CreateOrdersButton(GameObject parent)
     {
-        TreeChopController ctrl = FindObjectOfType<TreeChopController>();
+        OrdersMenuController ctrl = FindObjectOfType<OrdersMenuController>();
         Image img; RectTransform rect;
-        Button btn = CreateButton(parent, "\u0421\u0440\u0443\u0431\u0438\u0442\u044c", out img, out rect);
-        btn.onClick.AddListener(() => { if (ctrl != null) ctrl.ToggleSelecting(); });
-        if (ctrl != null) ctrl.AssignButton(img, rect);
+        Button btn = CreateButton(parent, "\u041f\u0440\u0438\u043a\u0430\u0437\u044b", out img, out rect);
+        btn.onClick.AddListener(() => { if (ctrl != null) ctrl.ToggleMenu(); });
     }
 
     void CreateBuildButton(GameObject parent)
