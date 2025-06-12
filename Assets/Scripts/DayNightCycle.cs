@@ -32,6 +32,13 @@ public class DayNightCycle : MonoBehaviour
         o.transform.SetParent(canvas.transform, false);
         overlay = o.AddComponent<Image>();
         overlay.color = new Color(0f, 0f, 0f, 0f);
+        // Disable raycasts so the overlay doesn't block UI interactions
+        overlay.raycastTarget = false;
+
+        // Ensure the overlay never intercepts input events
+        CanvasGroup cg = o.AddComponent<CanvasGroup>();
+        cg.blocksRaycasts = false;
+        cg.interactable = false;
 
         RectTransform rt = overlay.GetComponent<RectTransform>();
         rt.anchorMin = Vector2.zero;
