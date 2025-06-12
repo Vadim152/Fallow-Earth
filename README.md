@@ -43,6 +43,7 @@ Doors are built the same way and open automatically when colonists pass through.
 
 The `BuildMenuController` script creates a **Строительство** button. Pressing it opens a panel containing eight building buttons laid out in a 2x4 grid. The panel smoothly scales in and out when toggled so the interface feels more responsive.
 Alongside wooden walls you can now place wooden doors that automatically open when colonists approach.
+Clicking a door toggles a *hold open* mode so it stays open after colonists leave.
 
 ## Zone Menu
 

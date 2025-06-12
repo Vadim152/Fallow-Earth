@@ -9,6 +9,7 @@ public class Door : MonoBehaviour
 {
     static Sprite doorSprite;
     public float closeDelay = 1f;
+    public bool holdOpen = false; // if true the door remains open
 
     SpriteRenderer sr;
     Coroutine closeRoutine;
@@ -50,6 +51,8 @@ public class Door : MonoBehaviour
     {
         if (other.GetComponent<Colonist>() == null)
             return;
+        if (holdOpen)
+            return;
         if (closeRoutine != null)
             StopCoroutine(closeRoutine);
         closeRoutine = StartCoroutine(CloseAfterDelay());
@@ -69,5 +72,14 @@ public class Door : MonoBehaviour
     {
         yield return new WaitForSeconds(closeDelay);
         sr.color = Color.white;
+    }
+
+    void OnMouseDown()
+    {
+        holdOpen = !holdOpen;
+        if (holdOpen)
+            Open();
+        else if (closeRoutine == null)
+            sr.color = Color.white;
     }
 }
