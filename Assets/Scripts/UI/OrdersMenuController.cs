@@ -9,6 +9,7 @@ public class OrdersMenuController : MonoBehaviour
     private bool menuOpen;
     private Coroutine animRoutine;
     private Image toggleButtonImage;
+    private RectTransform toggleButtonRect;
     public Color activeColor = new Color(0.6f, 0.9f, 1f, 1f);
     public Color normalColor = new Color(0.9f, 0.9f, 0.9f, 1f);
 
@@ -65,7 +66,18 @@ public class OrdersMenuController : MonoBehaviour
         Button btn = obj.AddComponent<Button>();
         btn.targetGraphic = img;
         obj.AddComponent<ButtonPressEffect>();
-        btn.onClick.AddListener(() => { if (ctrl != null) ctrl.ToggleSelecting(); ToggleMenu(); });
+        btn.onClick.AddListener(() =>
+        {
+            if (ctrl != null)
+            {
+                ctrl.ToggleSelecting();
+                if (ctrl.IsSelecting)
+                    CancelActionUtility.Show(toggleButtonRect, ctrl.ToggleSelecting);
+                else
+                    CancelActionUtility.Hide();
+            }
+            ToggleMenu();
+        });
 
         GameObject textObj = new GameObject("Text");
         textObj.transform.SetParent(obj.transform, false);
@@ -87,12 +99,15 @@ public class OrdersMenuController : MonoBehaviour
             ctrl.AssignButton(img, brt);
     }
 
-    public void AssignToggleButton(Image img)
+    public void AssignToggleButton(Image img, RectTransform rect)
     {
         toggleButtonImage = img;
+        toggleButtonRect = rect;
         if (toggleButtonImage != null)
             toggleButtonImage.color = normalColor;
     }
+
+    public RectTransform ToggleButtonRect => toggleButtonRect;
 
     public void ToggleMenu()
     {

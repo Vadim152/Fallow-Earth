@@ -10,6 +10,7 @@ public class BuildMenuController : MonoBehaviour
     private bool menuOpen;
     private Coroutine animRoutine;
     private Image toggleButtonImage;
+    private RectTransform toggleButtonRect;
     public Color activeColor = new Color(0.6f, 0.9f, 1f, 1f);
     public Color normalColor = new Color(0.9f, 0.9f, 0.9f, 1f);
 
@@ -101,7 +102,13 @@ public class BuildMenuController : MonoBehaviour
         {
             BuildWallController ctrl = FindObjectOfType<BuildWallController>();
             if (ctrl != null)
+            {
                 ctrl.TogglePlacing();
+                if (ctrl.IsPlacing)
+                    CancelActionUtility.Show(toggleButtonRect, ctrl.TogglePlacing);
+                else
+                    CancelActionUtility.Hide();
+            }
             ToggleMenu();
         });
 
@@ -129,7 +136,13 @@ public class BuildMenuController : MonoBehaviour
         {
             BuildDoorController ctrl = FindObjectOfType<BuildDoorController>();
             if (ctrl != null)
+            {
                 ctrl.TogglePlacing();
+                if (ctrl.IsPlacing)
+                    CancelActionUtility.Show(toggleButtonRect, ctrl.TogglePlacing);
+                else
+                    CancelActionUtility.Hide();
+            }
             ToggleMenu();
         });
 
@@ -157,7 +170,13 @@ public class BuildMenuController : MonoBehaviour
         {
             BuildBedController ctrl = FindObjectOfType<BuildBedController>();
             if (ctrl != null)
+            {
                 ctrl.TogglePlacing();
+                if (ctrl.IsPlacing)
+                    CancelActionUtility.Show(toggleButtonRect, ctrl.TogglePlacing);
+                else
+                    CancelActionUtility.Hide();
+            }
             ToggleMenu();
         });
 
@@ -175,12 +194,15 @@ public class BuildMenuController : MonoBehaviour
         bRt.offsetMax = Vector2.zero;
     }
 
-    public void AssignToggleButton(Image img)
+    public void AssignToggleButton(Image img, RectTransform rect)
     {
         toggleButtonImage = img;
+        toggleButtonRect = rect;
         if (toggleButtonImage != null)
             toggleButtonImage.color = normalColor;
     }
+
+    public RectTransform ToggleButtonRect => toggleButtonRect;
 
     public void ToggleMenu()
     {

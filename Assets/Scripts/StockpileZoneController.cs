@@ -7,6 +7,8 @@ using UnityEngine;
 public class StockpileZoneController : MonoBehaviour
 {
     private bool placing;
+
+    public bool IsPlacing => placing;
     private MapGenerator map;
 
     void Start()
@@ -36,5 +38,6 @@ public class StockpileZoneController : MonoBehaviour
         // to haul resources.
         StockpileZone.Create(cells);
         placing = false;
+        CancelActionUtility.Hide();
     }
 }
