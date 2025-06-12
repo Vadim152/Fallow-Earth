@@ -17,11 +17,16 @@ public class TreeChopController : MonoBehaviour
     public Color highlightTint = new Color(2f, 2f, 2f, 1f);
     [Tooltip("How long a colonist spends chopping a tree")] public float chopTime = 1f;
 
+    public void AssignButton(Image img, RectTransform rect)
+    {
+        buttonImage = img;
+        buttonRect = rect;
+    }
+
     void Start()
     {
         map = FindObjectOfType<MapGenerator>();
         taskManager = FindObjectOfType<TaskManager>();
-        CreateUI();
     }
 
     void CreateUI()
@@ -68,7 +73,7 @@ public class TreeChopController : MonoBehaviour
         trt.offsetMax = Vector2.zero;
     }
 
-    void ToggleSelecting()
+    public void ToggleSelecting()
     {
         selecting = !selecting;
         if (buttonImage != null)
