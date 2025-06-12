@@ -16,7 +16,6 @@ public class ZoneMenuController : MonoBehaviour
     void Start()
     {
         SetupCanvas();
-        CreateZoneButton();
         CreateZoneMenu();
     }
 
@@ -127,7 +126,7 @@ public class ZoneMenuController : MonoBehaviour
         }
     }
 
-    void ToggleMenu()
+    public void ToggleMenu()
     {
         menuOpen = !menuOpen;
         if (animRoutine != null)

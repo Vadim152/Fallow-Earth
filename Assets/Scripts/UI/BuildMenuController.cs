@@ -13,7 +13,6 @@ public class BuildMenuController : MonoBehaviour
     void Start()
     {
         SetupCanvas();
-        CreateBuildButton();
         CreateBuildMenu();
     }
 
@@ -169,7 +168,7 @@ public class BuildMenuController : MonoBehaviour
         bRt.offsetMax = Vector2.zero;
     }
 
-    void ToggleMenu()
+    public void ToggleMenu()
     {
         menuOpen = !menuOpen;
         if (animRoutine != null)
