@@ -7,9 +7,14 @@ using UnityEngine.UI;
 /// </summary>
 public class TimeControlUI : MonoBehaviour
 {
+    private Image pauseImg;
+    private Image normalImg;
+    private Image fastImg;
+
     void Start()
     {
         SetupUI();
+        UpdateButtonHighlight();
     }
 
     void SetupUI()
@@ -37,12 +42,26 @@ public class TimeControlUI : MonoBehaviour
         rt.anchoredPosition = new Vector2(-20f, 20f);
         rt.sizeDelta = new Vector2(180f, 30f);
 
-        CreateButton(panel, "||", 0f);
-        CreateButton(panel, "1x", 1f);
-        CreateButton(panel, "3x", 3f);
+        pauseImg = CreateButton(panel, "||", 0f);
+        normalImg = CreateButton(panel, "1x", 1f);
+        fastImg = CreateButton(panel, "3x", 3f);
     }
 
-    void CreateButton(GameObject parent, string label, float speed)
+    void UpdateButtonHighlight()
+    {
+        Color active = new Color(0.6f, 1f, 0.6f, 1f);
+        Color inactive = new Color(0.9f, 0.9f, 0.9f, 1f);
+
+        float s = Time.timeScale;
+        if (pauseImg != null)
+            pauseImg.color = Mathf.Approximately(s, 0f) ? active : inactive;
+        if (normalImg != null)
+            normalImg.color = Mathf.Approximately(s, 1f) ? active : inactive;
+        if (fastImg != null)
+            fastImg.color = Mathf.Approximately(s, 3f) ? active : inactive;
+    }
+
+    Image CreateButton(GameObject parent, string label, float speed)
     {
         GameObject bObj = new GameObject(label + "Button");
         bObj.transform.SetParent(parent.transform, false);
@@ -50,7 +69,11 @@ public class TimeControlUI : MonoBehaviour
         img.color = new Color(0.9f, 0.9f, 0.9f, 1f);
         Button btn = bObj.AddComponent<Button>();
         btn.targetGraphic = img;
-        btn.onClick.AddListener(() => Time.timeScale = speed);
+        btn.onClick.AddListener(() =>
+        {
+            Time.timeScale = speed;
+            UpdateButtonHighlight();
+        });
 
         GameObject tObj = new GameObject("Text");
         tObj.transform.SetParent(bObj.transform, false);
@@ -67,5 +90,7 @@ public class TimeControlUI : MonoBehaviour
 
         RectTransform rt = bObj.GetComponent<RectTransform>();
         rt.sizeDelta = new Vector2(40f, 30f);
+
+        return img;
     }
 }
