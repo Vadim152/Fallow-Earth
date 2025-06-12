@@ -31,11 +31,12 @@ public class ActionButtonsUI : MonoBehaviour
         rt.anchorMax = new Vector2(0f, 0f);
         rt.pivot = new Vector2(0f, 0f);
         rt.anchoredPosition = new Vector2(20f, 20f);
-        rt.sizeDelta = new Vector2(160f, 100f);
+        rt.sizeDelta = new Vector2(160f, 135f);
 
         CreateChopButton(panel);
         CreateBuildButton(panel);
         CreateZoneButton(panel);
+        CreateColonistsButton(panel);
     }
 
     void CreateChopButton(GameObject parent)
@@ -60,6 +61,14 @@ public class ActionButtonsUI : MonoBehaviour
         ZoneMenuController ctrl = FindObjectOfType<ZoneMenuController>();
         Image img; RectTransform rect;
         Button btn = CreateButton(parent, "\u0417\u043e\u043d\u044b", out img, out rect);
+        btn.onClick.AddListener(() => { if (ctrl != null) ctrl.ToggleMenu(); });
+    }
+
+    void CreateColonistsButton(GameObject parent)
+    {
+        ColonistMenuController ctrl = FindObjectOfType<ColonistMenuController>();
+        Image img; RectTransform rect;
+        Button btn = CreateButton(parent, "\u041a\u043e\u043b\u043e\u043d\u0438\u0441\u0442\u044b", out img, out rect);
         btn.onClick.AddListener(() => { if (ctrl != null) ctrl.ToggleMenu(); });
     }
 
