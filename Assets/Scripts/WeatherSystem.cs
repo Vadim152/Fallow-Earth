@@ -58,6 +58,8 @@ public class WeatherSystem : MonoBehaviour
         o.transform.SetParent(canvas.transform, false);
         overlay = o.AddComponent<Image>();
         overlay.color = new Color(0.6f, 0.6f, 1f, 0f);
+        // Disable raycasts so the overlay doesn't block UI interactions
+        overlay.raycastTarget = false;
 
         RectTransform rt = overlay.GetComponent<RectTransform>();
         rt.anchorMin = Vector2.zero;
