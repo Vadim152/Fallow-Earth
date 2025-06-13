@@ -50,9 +50,9 @@ public class ZoneMenuController : MonoBehaviour
         btn.targetGraphic = img;
         buttonObj.AddComponent<ButtonPressEffect>();
         btn.onClick.AddListener(ToggleMenu);
-        AssignToggleButton(img);
 
         RectTransform rt = buttonObj.GetComponent<RectTransform>();
+        AssignToggleButton(img, rt);
         rt.anchorMin = new Vector2(0f, 0f);
         rt.anchorMax = new Vector2(0f, 0f);
         rt.pivot = new Vector2(0f, 0f);
@@ -116,9 +116,9 @@ public class ZoneMenuController : MonoBehaviour
                     {
                         ctrl.TogglePlacing();
                         if (ctrl.IsPlacing)
-                            CancelActionUtility.Show(toggleButtonRect, ctrl.TogglePlacing);
+                            global::CancelActionUI.Show(toggleButtonRect, ctrl.TogglePlacing);
                         else
-                            CancelActionUtility.Hide();
+                            global::CancelActionUI.Hide();
                     }
                     ToggleMenu();
                 });
