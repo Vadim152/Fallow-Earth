@@ -105,6 +105,7 @@ public class BuildMenuController : MonoBehaviour
             {
                 ctrl.TogglePlacing();
                 if (ctrl.IsPlacing)
+
                     global::CancelActionUI.Show(toggleButtonRect, ctrl.TogglePlacing);
                 else
                     global::CancelActionUI.Hide();
