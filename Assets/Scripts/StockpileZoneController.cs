@@ -38,6 +38,6 @@ public class StockpileZoneController : MonoBehaviour
         // to haul resources.
         StockpileZone.Create(cells);
         placing = false;
-        global::CancelActionUI.Hide();
+        CancelActionUI.Hide();
     }
 }

@@ -116,9 +116,9 @@ public class ZoneMenuController : MonoBehaviour
                     {
                         ctrl.TogglePlacing();
                         if (ctrl.IsPlacing)
-                            global::CancelActionUI.Show(toggleButtonRect, ctrl.TogglePlacing);
+                            CancelActionUI.Show(toggleButtonRect, ctrl.TogglePlacing);
                         else
-                            global::CancelActionUI.Hide();
+                            CancelActionUI.Hide();
                     }
                     ToggleMenu();
                 });
