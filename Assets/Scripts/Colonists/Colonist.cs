@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -16,6 +17,8 @@ public class Colonist : MonoBehaviour
     [Range(0f,1f)] public float fatigue;
     [Range(0f,1f)] public float stress;
     [Range(0f,1f)] public float social;
+
+    public HashSet<JobType> jobPriorities = new HashSet<JobType>();
 
     private Task currentTask;
     private TaskManager taskManager;
@@ -50,6 +53,9 @@ public class Colonist : MonoBehaviour
         map = FindObjectOfType<MapGenerator>();
         taskManager = FindObjectOfType<TaskManager>();
 
+        foreach (JobType jt in System.Enum.GetValues(typeof(JobType)))
+            jobPriorities.Add(jt);
+
         // initialize stats with random values so the info card has data
         hunger = Random.Range(0f, 1f);
         fatigue = Random.Range(0f, 1f);
@@ -64,6 +70,16 @@ public class Colonist : MonoBehaviour
         if (taskManager == null)
             taskManager = FindObjectOfType<TaskManager>();
     }
+
+    public void SetJobAllowed(JobType job, bool allowed)
+    {
+        if (allowed)
+            jobPriorities.Add(job);
+        else
+            jobPriorities.Remove(job);
+    }
+
+    public bool IsJobAllowed(JobType job) => jobPriorities.Contains(job);
 
     public void SetTask(Task task)
     {

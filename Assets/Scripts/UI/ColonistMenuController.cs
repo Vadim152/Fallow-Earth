@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using System;
 
 public class ColonistMenuController : MonoBehaviour
 {
@@ -59,22 +60,75 @@ public class ColonistMenuController : MonoBehaviour
     {
         foreach (Transform t in menuPanel.transform)
             GameObject.Destroy(t.gameObject);
+        JobType[] jobs = (JobType[])Enum.GetValues(typeof(JobType));
+
+        GameObject header = new GameObject("Header");
+        header.transform.SetParent(menuPanel.transform, false);
+        HorizontalLayoutGroup hLayout = header.AddComponent<HorizontalLayoutGroup>();
+        hLayout.spacing = 5f;
+
+        CreateHeaderCell(header, "Colonist");
+        foreach (var j in jobs)
+            CreateHeaderCell(header, j.ToString());
 
         Colonist[] cols = GameObject.FindObjectsOfType<Colonist>();
         foreach (var c in cols)
         {
-            GameObject tObj = new GameObject(c.name);
-            tObj.transform.SetParent(menuPanel.transform, false);
-            Text t = tObj.AddComponent<Text>();
-            t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            t.color = Color.black;
-            t.alignment = TextAnchor.MiddleLeft;
-            int mood = Mathf.RoundToInt(c.mood * 100f);
-            int health = Mathf.RoundToInt(c.health * 100f);
-            t.text = $"{c.name} - \u0437\u0434\u043e\u0440\u043e\u0432\u044c\u0435 {health}% \u043d\u0430\u0441\u0442\u0440\u043e\u0435\u043d\u0438\u0435 {mood}%";
-            RectTransform tr = t.GetComponent<RectTransform>();
-            tr.sizeDelta = new Vector2(0f, 20f);
+            GameObject row = new GameObject(c.name + "Row");
+            row.transform.SetParent(menuPanel.transform, false);
+            HorizontalLayoutGroup layout = row.AddComponent<HorizontalLayoutGroup>();
+            layout.spacing = 5f;
+
+            CreateRowLabel(row, c.name);
+
+            foreach (var j in jobs)
+            {
+                Toggle t = CreateRowToggle(row, c.IsJobAllowed(j));
+                JobType jt = j; Colonist col = c;
+                t.onValueChanged.AddListener(val => col.SetJobAllowed(jt, val));
+            }
         }
+    }
+
+    void CreateHeaderCell(GameObject parent, string text)
+    {
+        GameObject tObj = new GameObject(text);
+        tObj.transform.SetParent(parent.transform, false);
+        Text t = tObj.AddComponent<Text>();
+        t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        t.color = Color.black;
+        t.alignment = TextAnchor.MiddleCenter;
+        t.text = text;
+        RectTransform tr = t.GetComponent<RectTransform>();
+        tr.sizeDelta = new Vector2(0f, 20f);
+    }
+
+    void CreateRowLabel(GameObject parent, string text)
+    {
+        GameObject tObj = new GameObject("Label");
+        tObj.transform.SetParent(parent.transform, false);
+        Text t = tObj.AddComponent<Text>();
+        t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        t.color = Color.black;
+        t.alignment = TextAnchor.MiddleLeft;
+        t.text = text;
+        RectTransform tr = t.GetComponent<RectTransform>();
+        tr.sizeDelta = new Vector2(80f, 20f);
+    }
+
+    Toggle CreateRowToggle(GameObject parent, bool state)
+    {
+        GameObject obj = new GameObject("Toggle");
+        obj.transform.SetParent(parent.transform, false);
+        Toggle tog = obj.AddComponent<Toggle>();
+        Image bg = obj.AddComponent<Image>();
+        bg.color = state ? new Color(0.5f,1f,0.5f,1f) : Color.white;
+        tog.targetGraphic = bg;
+        tog.onValueChanged.AddListener(v => bg.color = v ? new Color(0.5f,1f,0.5f,1f) : Color.white);
+        tog.isOn = state;
+        RectTransform rt = obj.GetComponent<RectTransform>();
+        rt.sizeDelta = new Vector2(20f, 20f);
+        return tog;
     }
 
     public void AssignToggleButton(Image img)
