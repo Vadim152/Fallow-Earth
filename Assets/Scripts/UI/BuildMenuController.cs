@@ -105,9 +105,9 @@ public class BuildMenuController : MonoBehaviour
             {
                 ctrl.TogglePlacing();
                 if (ctrl.IsPlacing)
-                    CancelActionUI.Show(toggleButtonRect, ctrl.TogglePlacing);
+                    global::CancelActionUI.Show(toggleButtonRect, ctrl.TogglePlacing);
                 else
-                    CancelActionUI.Hide();
+                    global::CancelActionUI.Hide();
             }
             ToggleMenu();
         });
@@ -139,9 +139,9 @@ public class BuildMenuController : MonoBehaviour
             {
                 ctrl.TogglePlacing();
                 if (ctrl.IsPlacing)
-                    CancelActionUI.Show(toggleButtonRect, ctrl.TogglePlacing);
+                    global::CancelActionUI.Show(toggleButtonRect, ctrl.TogglePlacing);
                 else
-                    CancelActionUI.Hide();
+                    global::CancelActionUI.Hide();
             }
             ToggleMenu();
         });
@@ -173,9 +173,9 @@ public class BuildMenuController : MonoBehaviour
             {
                 ctrl.TogglePlacing();
                 if (ctrl.IsPlacing)
-                    CancelActionUI.Show(toggleButtonRect, ctrl.TogglePlacing);
+                    global::CancelActionUI.Show(toggleButtonRect, ctrl.TogglePlacing);
                 else
-                    CancelActionUI.Hide();
+                    global::CancelActionUI.Hide();
             }
             ToggleMenu();
         });
