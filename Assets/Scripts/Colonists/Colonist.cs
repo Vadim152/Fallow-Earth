@@ -57,10 +57,10 @@ public class Colonist : MonoBehaviour
             jobPriorities.Add(jt);
 
         // initialize stats with random values so the info card has data
-        hunger = Random.Range(0f, 1f);
-        fatigue = Random.Range(0f, 1f);
-        stress = Random.Range(0f, 1f);
-        social = Random.Range(0f, 1f);
+        hunger = UnityEngine.Random.Range(0f, 1f);
+        fatigue = UnityEngine.Random.Range(0f, 1f);
+        stress = UnityEngine.Random.Range(0f, 1f);
+        social = UnityEngine.Random.Range(0f, 1f);
     }
 
     void Start()
@@ -342,7 +342,7 @@ public class Colonist : MonoBehaviour
                     else if (path == null || pathIndex >= path.Count)
                     {
                         ResourceManager.AddWood(task.targetLog.Amount);
-                        Object.Destroy(task.targetLog.gameObject);
+                        UnityEngine.Object.Destroy(task.targetLog.gameObject);
                         task.targetLog = null;
                         if (ResourceManager.Instance != null && ResourceManager.Instance.Wood >= task.woodNeeded)
                         {
@@ -428,7 +428,7 @@ public class Colonist : MonoBehaviour
                     if (task.log != null)
                     {
                         ResourceManager.AddWood(task.log.Amount);
-                        Object.Destroy(task.log.gameObject);
+                        UnityEngine.Object.Destroy(task.log.gameObject);
                     }
                     currentTask = null;
                     activity = "Idle";
@@ -558,8 +558,8 @@ public class Colonist : MonoBehaviour
         Vector2Int start = Vector2Int.FloorToInt(transform.position);
         for (int i = 0; i < 20; i++)
         {
-            int x = Random.Range(0, map.width);
-            int y = Random.Range(0, map.height);
+            int x = UnityEngine.Random.Range(0, map.width);
+            int y = UnityEngine.Random.Range(0, map.height);
             if (map.IsPassable(x, y))
             {
                 path = FindPath(start, new Vector2Int(x, y));
@@ -599,7 +599,7 @@ public class Colonist : MonoBehaviour
 
         if (best != null && (social < 0.6f || best.social < 0.6f))
         {
-            float dur = Random.Range(1.5f, 3.5f);
+            float dur = UnityEngine.Random.Range(1.5f, 3.5f);
             Vector2 meetPoint = (transform.position + best.transform.position) * 0.5f;
             var taskA = new SocializeTask(best, meetPoint, dur,
                 col => {
