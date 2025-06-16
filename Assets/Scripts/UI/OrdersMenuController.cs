@@ -72,9 +72,9 @@ public class OrdersMenuController : MonoBehaviour
             {
                 ctrl.ToggleSelecting();
                     if (ctrl.IsSelecting)
-                        CancelActionUI.Show(toggleButtonRect, ctrl.ToggleSelecting);
+                    global::CancelActionUI.Show(toggleButtonRect, ctrl.ToggleSelecting);
                     else
-                        CancelActionUI.Hide();
+                        global::CancelActionUI.Hide();
             }
             ToggleMenu();
         });
