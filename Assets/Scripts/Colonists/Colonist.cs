@@ -182,44 +182,8 @@ public class Colonist : MonoBehaviour
             }
             else if (path == null || pathIndex >= path.Count)
             {
-                if (hunger > 0.6f && map != null && map.TryFindClosestBerryCell(transform.position, out var berry))
-                {
-                    SetTask(new EatBerryTask(berry, 2f, c =>
-                    {
-                        map.RemoveBerries(berry.x, berry.y);
-                        c.hunger = Mathf.Clamp01(c.hunger - 0.5f);
-                    }));
-                }
-                else if (fatigue > 0.6f)
-                {
-                    Bed bed = Bed.FindAvailable(transform.position);
-                    if (bed != null)
-                    {
-                        SetTask(new RestTask(bed, 5f));
-                    }
-                    else
-                    {
-                        StartWander();
-                    }
-                }
-                else if (social < 0.4f && TryStartSocialize())
-                {
-                }
-                else if (stress > 0.8f)
-                {
-                    if (!TryStartSocialize())
-                    {
-                        Bed bed = Bed.FindAvailable(transform.position);
-                        if (bed != null)
-                            SetTask(new RestTask(bed, 4f));
-                        else
-                            StartWander();
-                    }
-                }
-                else
-                {
+                if (!EvaluateNeeds())
                     StartWander();
-                }
             }
         }
         if (currentTask is BuildWallTask bw)
@@ -550,6 +514,74 @@ public class Colonist : MonoBehaviour
         return list;
     }
 
+    bool EvaluateNeeds()
+    {
+        var options = new List<NeedAction>();
+
+        if (hunger > 0.6f)
+        {
+            options.Add(new NeedAction(hunger, () =>
+            {
+                if (map != null && map.TryFindClosestBerryCell(transform.position, out var berry))
+                {
+                    SetTask(new EatBerryTask(berry, 2f, c =>
+                    {
+                        map.RemoveBerries(berry.x, berry.y);
+                        c.hunger = Mathf.Clamp01(c.hunger - 0.5f);
+                    }));
+                    return true;
+                }
+                return false;
+            }));
+        }
+
+        if (fatigue > 0.6f)
+        {
+            options.Add(new NeedAction(fatigue, () =>
+            {
+                Bed bed = Bed.FindAvailable(transform.position);
+                if (bed != null)
+                {
+                    SetTask(new RestTask(bed, 5f));
+                    return true;
+                }
+                return false;
+            }));
+        }
+
+        if (social < 0.4f)
+        {
+            options.Add(new NeedAction(1f - social, () => TryStartSocialize()));
+        }
+
+        if (stress > 0.8f)
+        {
+            options.Add(new NeedAction(stress, () =>
+            {
+                if (TryStartSocialize())
+                    return true;
+                Bed bed = Bed.FindAvailable(transform.position);
+                if (bed != null)
+                {
+                    SetTask(new RestTask(bed, 4f));
+                    return true;
+                }
+                return false;
+            }));
+        }
+
+        if (options.Count == 0)
+            return false;
+
+        options.Sort((a, b) => b.priority.CompareTo(a.priority));
+        foreach (var opt in options)
+        {
+            if (opt.action())
+                return true;
+        }
+        return false;
+    }
+
     void StartWander()
     {
         if (map == null)
@@ -640,6 +672,17 @@ public class Colonist : MonoBehaviour
         tex.filterMode = FilterMode.Point;
         tex.Apply();
         return Sprite.Create(tex, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f), 1);
+    }
+
+    struct NeedAction
+    {
+        public float priority;
+        public Func<bool> action;
+        public NeedAction(float priority, Func<bool> action)
+        {
+            this.priority = priority;
+            this.action = action;
+        }
     }
 
     class Node
