@@ -152,7 +152,7 @@ public class Colonist : MonoBehaviour
 
         if (currentTask == null)
         {
-            currentTask = taskManager != null ? taskManager.GetNextTask() : null;
+            currentTask = taskManager != null ? taskManager.GetNextTask(this) : null;
 
             if (currentTask != null)
             {
