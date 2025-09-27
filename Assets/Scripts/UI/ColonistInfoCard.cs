@@ -17,11 +17,16 @@ public class ColonistInfoCard : MonoBehaviour
     private Slider socialSlider;
 
     private Colonist current;
+    private ColonistMenuController menuController;
+    private ColonistControlUI controlUI;
+    private Colonist pendingManualMove;
+    private bool awaitingManualMove;
 
     void Start()
     {
         SetupCanvas();
         CreateUI();
+        EnsureDependencies();
         Hide();
     }
 
@@ -85,10 +90,10 @@ public class ColonistInfoCard : MonoBehaviour
         HorizontalLayoutGroup b3Layout = block3.AddComponent<HorizontalLayoutGroup>();
         b3Layout.spacing = 4f;
 
-        CreateButton(block3, "\u274c", () => current?.CancelTasks());
-        CreateButton(block3, "\u26cf", () => { /* manual priority placeholder */ });
-        CreateButton(block3, "\ud83d\udcfd", () => { /* rest placeholder */ });
-        CreateButton(block3, "\ud83c\udfaf", () => { /* target placeholder */ });
+        CreateButton(block3, "\u274c", HandleCancelTasks);
+        CreateButton(block3, "\u26cf", HandleManualPriority);
+        CreateButton(block3, "\ud83d\udcfd", HandleForceRest);
+        CreateButton(block3, "\ud83c\udfaf", HandleManualMove);
     }
 
     Text CreateLabel(GameObject parent, string text)
@@ -151,10 +156,24 @@ public class ColonistInfoCard : MonoBehaviour
             stressSlider.value = current.stress;
             socialSlider.value = current.social;
         }
+
+        if (awaitingManualMove && pendingManualMove != null && Input.GetMouseButtonDown(0))
+        {
+            Camera cam = Camera.main;
+            if (cam != null)
+            {
+                Vector3 world = cam.ScreenToWorldPoint(Input.mousePosition);
+                world.z = 0f;
+                pendingManualMove.SetTask(new Task(world));
+            }
+            awaitingManualMove = false;
+            pendingManualMove = null;
+        }
     }
 
     public void Show(Colonist c)
     {
+        EnsureDependencies();
         current = c;
         panel.SetActive(true);
     }
@@ -163,5 +182,86 @@ public class ColonistInfoCard : MonoBehaviour
     {
         panel.SetActive(false);
         current = null;
+    }
+
+    void EnsureDependencies()
+    {
+        if (menuController == null)
+            menuController = FindObjectOfType<ColonistMenuController>();
+        if (controlUI == null)
+            controlUI = FindObjectOfType<ColonistControlUI>();
+    }
+
+    void HandleCancelTasks()
+    {
+        if (current == null)
+            return;
+
+        EnsureDependencies();
+        if (awaitingManualMove && pendingManualMove == current)
+        {
+            awaitingManualMove = false;
+            pendingManualMove = null;
+        }
+
+        controlUI?.CancelManualMove(current);
+        current.CancelTasks();
+    }
+
+    void HandleManualPriority()
+    {
+        if (current == null)
+            return;
+
+        EnsureDependencies();
+        menuController?.FocusColonist(current);
+    }
+
+    void HandleForceRest()
+    {
+        if (current == null)
+            return;
+
+        EnsureDependencies();
+        Bed bed = Bed.FindAvailable(current.transform.position);
+        if (bed == null)
+        {
+            Debug.LogWarning($"No available bed found for {current.name}.");
+            return;
+        }
+
+        controlUI?.CancelManualMove(current);
+        if (awaitingManualMove && pendingManualMove == current)
+        {
+            awaitingManualMove = false;
+            pendingManualMove = null;
+        }
+
+        current.CancelTasks();
+        float restDuration = Mathf.Lerp(3f, 6f, Mathf.Clamp01(current.fatigue));
+        current.SetTask(new RestTask(bed, restDuration));
+    }
+
+    void HandleManualMove()
+    {
+        if (current == null)
+            return;
+
+        EnsureDependencies();
+        current.CancelTasks();
+
+        if (controlUI != null)
+        {
+            controlUI.BeginManualMove(current);
+            awaitingManualMove = false;
+            pendingManualMove = null;
+        }
+        else
+        {
+            awaitingManualMove = true;
+            pendingManualMove = current;
+        }
+
+        Hide();
     }
 }

@@ -12,6 +12,10 @@ public class ColonistMenuController : MonoBehaviour
     private Image toggleButtonImage;
     public Color activeColor = new Color(0.6f, 0.9f, 1f, 1f);
     public Color normalColor = new Color(0.9f, 0.9f, 0.9f, 1f);
+    public Color rowHighlightColor = new Color(0.6f, 0.85f, 1f, 0.65f);
+
+    private GameObject highlightedRow;
+    private readonly Color rowNormalColor = new Color(1f, 1f, 1f, 0.15f);
 
     void Start()
     {
@@ -60,6 +64,7 @@ public class ColonistMenuController : MonoBehaviour
     {
         foreach (Transform t in menuPanel.transform)
             GameObject.Destroy(t.gameObject);
+        highlightedRow = null;
         JobType[] jobs = (JobType[])Enum.GetValues(typeof(JobType));
 
         GameObject header = new GameObject("Header");
@@ -78,6 +83,15 @@ public class ColonistMenuController : MonoBehaviour
             row.transform.SetParent(menuPanel.transform, false);
             HorizontalLayoutGroup layout = row.AddComponent<HorizontalLayoutGroup>();
             layout.spacing = 5f;
+            layout.childAlignment = TextAnchor.MiddleLeft;
+
+            Image bg = row.AddComponent<Image>();
+            bg.color = rowNormalColor;
+            bg.raycastTarget = false;
+
+            LayoutElement element = row.AddComponent<LayoutElement>();
+            element.minHeight = 24f;
+            element.preferredHeight = 24f;
 
             CreateRowLabel(row, c.name);
 
@@ -138,6 +152,34 @@ public class ColonistMenuController : MonoBehaviour
             toggleButtonImage.color = normalColor;
     }
 
+    public void FocusColonist(Colonist colonist)
+    {
+        if (colonist == null)
+            return;
+
+        if (canvas == null)
+            SetupCanvas();
+        if (menuPanel == null)
+            CreateMenu();
+
+        if (!menuOpen)
+        {
+            menuOpen = true;
+            RefreshList();
+            if (toggleButtonImage != null)
+                toggleButtonImage.color = activeColor;
+            if (animRoutine != null)
+                StopCoroutine(animRoutine);
+            animRoutine = StartCoroutine(MenuAnimation(true));
+        }
+        else
+        {
+            RefreshList();
+        }
+
+        HighlightColonistRow(colonist);
+    }
+
     public void ToggleMenu()
     {
         menuOpen = !menuOpen;
@@ -148,6 +190,8 @@ public class ColonistMenuController : MonoBehaviour
         if (animRoutine != null)
             StopCoroutine(animRoutine);
         animRoutine = StartCoroutine(MenuAnimation(menuOpen));
+        if (!menuOpen)
+            highlightedRow = null;
     }
 
     IEnumerator MenuAnimation(bool open)
@@ -169,5 +213,37 @@ public class ColonistMenuController : MonoBehaviour
         menuPanel.transform.localScale = target;
         if (!open)
             menuPanel.SetActive(false);
+    }
+
+    void HighlightColonistRow(Colonist colonist)
+    {
+        if (menuPanel == null)
+            return;
+
+        GameObject targetRow = null;
+        foreach (Transform child in menuPanel.transform)
+        {
+            if (child.name == colonist.name + "Row")
+            {
+                targetRow = child.gameObject;
+                break;
+            }
+        }
+
+        if (targetRow == null)
+            return;
+
+        if (highlightedRow != null && highlightedRow != targetRow)
+        {
+            Image previous = highlightedRow.GetComponent<Image>();
+            if (previous != null)
+                previous.color = rowNormalColor;
+        }
+
+        Image img = targetRow.GetComponent<Image>();
+        if (img != null)
+            img.color = rowHighlightColor;
+
+        highlightedRow = targetRow;
     }
 }

@@ -48,4 +48,17 @@ public class ColonistControlUI : MonoBehaviour
                 infoCard.Hide();
         }
     }
+
+    public void BeginManualMove(Colonist colonist)
+    {
+        if (colonist == null)
+            return;
+        selected = colonist;
+    }
+
+    public void CancelManualMove(Colonist colonist)
+    {
+        if (colonist == null || selected == colonist)
+            selected = null;
+    }
 }
