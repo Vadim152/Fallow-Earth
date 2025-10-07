@@ -19,4 +19,13 @@ public class HaulLogTask : Task
         if (log != null)
             log.Reserved = true;
     }
+
+    public void ReleaseReservation()
+    {
+        if (log != null)
+        {
+            log.Reserved = false;
+        }
+        log = null;
+    }
 }

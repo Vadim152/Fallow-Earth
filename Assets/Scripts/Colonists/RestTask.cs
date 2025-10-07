@@ -18,4 +18,13 @@ public class RestTask : Task
         if (bed != null)
             bed.Reserved = true;
     }
+
+    public void ReleaseReservation()
+    {
+        if (bed != null)
+        {
+            bed.Reserved = false;
+        }
+        bed = null;
+    }
 }

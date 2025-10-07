@@ -20,4 +20,13 @@ public class BuildWallTask : Task
         this.buildTime = buildTime;
         this.woodNeeded = woodNeeded;
     }
+
+    public void ReleaseReservation()
+    {
+        if (targetLog != null)
+        {
+            targetLog.Reserved = false;
+        }
+        targetLog = null;
+    }
 }
