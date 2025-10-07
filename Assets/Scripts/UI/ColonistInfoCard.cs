@@ -22,6 +22,8 @@ public class ColonistInfoCard : MonoBehaviour
     private Colonist pendingManualMove;
     private bool awaitingManualMove;
 
+    public bool IsVisible => panel != null && panel.activeSelf;
+
     void Start()
     {
         SetupCanvas();
