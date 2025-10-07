@@ -83,6 +83,14 @@ public class Colonist : MonoBehaviour
 
     public void SetTask(Task task)
     {
+        if (currentTask == task)
+            return;
+
+        if (currentTask != null)
+        {
+            ReleaseCurrentTaskReservation();
+        }
+
         currentTask = task;
         if (currentTask != null)
         {
@@ -118,9 +126,30 @@ public class Colonist : MonoBehaviour
 
     public void CancelTasks()
     {
+        if (currentTask != null)
+        {
+            ReleaseCurrentTaskReservation();
+        }
+
         currentTask = null;
         path = null;
         activity = "Idle";
+    }
+
+    void ReleaseCurrentTaskReservation()
+    {
+        if (currentTask is BuildWallTask buildTask)
+        {
+            buildTask.ReleaseReservation();
+        }
+        else if (currentTask is HaulLogTask haulTask)
+        {
+            haulTask.ReleaseReservation();
+        }
+        else if (currentTask is RestTask restTask)
+        {
+            restTask.ReleaseReservation();
+        }
     }
 
     void Update()
@@ -434,8 +463,7 @@ public class Colonist : MonoBehaviour
                 fatigue = Mathf.Clamp01(fatigue - Time.deltaTime / task.restTime);
                 if (actionTimer <= 0f)
                 {
-                    if (task.bed != null)
-                        task.bed.Reserved = false;
+                    task.ReleaseReservation();
                     currentTask = null;
                     activity = "Idle";
                 }
