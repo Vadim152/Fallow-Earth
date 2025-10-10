@@ -1,21 +1,32 @@
+using System;
 using System.Collections.Generic;
+using FallowEarth.Saving;
 using UnityEngine;
 
 /// <summary>
 /// Simple representation of a stockpile zone.
 /// Stores a set of map cells that belong to the zone.
 /// </summary>
-public class StockpileZone
+public class StockpileZone : ISaveable, IMutableSaveId, IDisposable
 {
     public HashSet<Vector2Int> cells = new HashSet<Vector2Int>();
 
     public static List<StockpileZone> AllZones { get; } = new List<StockpileZone>();
 
+    private string saveId;
+
+    public StockpileZone()
+    {
+        AllZones.Add(this);
+    }
+
     public static StockpileZone Create(IEnumerable<Vector2Int> newCells)
     {
         var zone = new StockpileZone();
         zone.cells = new HashSet<Vector2Int>(newCells);
-        AllZones.Add(zone);
+        zone.saveId = Guid.NewGuid().ToString();
+        if (WorldDataManager.HasInstance)
+            WorldDataManager.Instance.Register(zone);
         return zone;
     }
 
@@ -38,5 +49,75 @@ public class StockpileZone
             }
         }
         return bestCell;
+    }
+
+    public void Dispose()
+    {
+        AllZones.Remove(this);
+        cells.Clear();
+    }
+
+    public string SaveId => saveId;
+
+    public SaveCategory Category => SaveCategory.Zone;
+
+    public Vector3 SavePosition
+    {
+        get
+        {
+            if (cells == null || cells.Count == 0)
+                return Vector3.zero;
+            float sumX = 0f;
+            float sumY = 0f;
+            foreach (var cell in cells)
+            {
+                sumX += cell.x;
+                sumY += cell.y;
+            }
+            return new Vector3(sumX / cells.Count, sumY / cells.Count, 0f);
+        }
+    }
+
+    [Serializable]
+    private struct ZoneSaveState
+    {
+        public List<Vector2Int> cells;
+    }
+
+    public void PopulateSaveData(SaveData saveData)
+    {
+        saveData.Set("zone", new ZoneSaveState
+        {
+            cells = cells != null ? new List<Vector2Int>(cells) : new List<Vector2Int>()
+        });
+    }
+
+    public void LoadFromSaveData(SaveData saveData)
+    {
+        if (saveData.TryGet("zone", out ZoneSaveState state) && state.cells != null)
+        {
+            cells = new HashSet<Vector2Int>(state.cells);
+        }
+        else
+        {
+            cells = new HashSet<Vector2Int>();
+        }
+    }
+
+    public void SetSaveId(string newId)
+    {
+        if (string.IsNullOrEmpty(newId))
+            throw new ArgumentException("Save id cannot be null or empty", nameof(newId));
+
+        if (saveId == newId)
+            return;
+
+        string oldId = saveId;
+        saveId = newId;
+
+        if (WorldDataManager.HasInstance)
+        {
+            WorldDataManager.Instance.NotifyIdentifierChanged(this, oldId, newId);
+        }
     }
 }
