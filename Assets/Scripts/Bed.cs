@@ -1,19 +1,22 @@
+using System;
 using System.Collections.Generic;
+using FallowEarth.Saving;
 using UnityEngine;
 
 /// <summary>
 /// Simple bed that colonists can use to rest and recover fatigue.
 /// </summary>
 [RequireComponent(typeof(BoxCollider2D))]
-public class Bed : MonoBehaviour
+public class Bed : SaveableMonoBehaviour
 {
     static Sprite bedSprite;
     public static List<Bed> AllBeds { get; } = new List<Bed>();
 
     public bool Reserved { get; set; }
 
-    void Awake()
+    protected override void Awake()
     {
+        base.Awake();
         if (bedSprite == null)
         {
             Texture2D tex = new Texture2D(1, 1);
@@ -64,5 +67,32 @@ public class Bed : MonoBehaviour
             }
         }
         return best;
+    }
+
+    public override SaveCategory Category => SaveCategory.Structure;
+
+    [Serializable]
+    private struct BedSaveState
+    {
+        public Vector3 position;
+        public bool reserved;
+    }
+
+    public override void PopulateSaveData(SaveData saveData)
+    {
+        saveData.Set("bed", new BedSaveState
+        {
+            position = transform.position,
+            reserved = Reserved
+        });
+    }
+
+    public override void LoadFromSaveData(SaveData saveData)
+    {
+        if (saveData.TryGet("bed", out BedSaveState state))
+        {
+            transform.position = state.position;
+            Reserved = state.reserved;
+        }
     }
 }

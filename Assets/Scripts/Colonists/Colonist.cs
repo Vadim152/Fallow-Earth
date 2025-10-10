@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
+using FallowEarth.Saving;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(BoxCollider2D))]
-public class Colonist : MonoBehaviour
+public class Colonist : SaveableMonoBehaviour
 {
     public float moveSpeed = 10f;
     private float baseMoveSpeed;
@@ -34,8 +35,9 @@ public class Colonist : MonoBehaviour
 
     public bool IsBusy => currentTask != null;
 
-    void Awake()
+    protected override void Awake()
     {
+        base.Awake();
         rb = GetComponent<Rigidbody2D>();
         rb.gravityScale = 0f;
         baseMoveSpeed = moveSpeed;
@@ -69,6 +71,74 @@ public class Colonist : MonoBehaviour
             map = FindObjectOfType<MapGenerator>();
         if (taskManager == null)
             taskManager = FindObjectOfType<TaskManager>();
+    }
+
+    public override SaveCategory Category => SaveCategory.Creature;
+
+    [Serializable]
+    private struct ColonistSaveState
+    {
+        public Vector3 position;
+        public float mood;
+        public float health;
+        public float hunger;
+        public float fatigue;
+        public float stress;
+        public float social;
+        public string activity;
+        public List<JobType> allowedJobs;
+    }
+
+    public override void PopulateSaveData(SaveData saveData)
+    {
+        var state = new ColonistSaveState
+        {
+            position = transform.position,
+            mood = mood,
+            health = health,
+            hunger = hunger,
+            fatigue = fatigue,
+            stress = stress,
+            social = social,
+            activity = activity,
+            allowedJobs = new List<JobType>(jobPriorities)
+        };
+        saveData.Set("colonist", state);
+    }
+
+    public override void LoadFromSaveData(SaveData saveData)
+    {
+        if (saveData.TryGet("colonist", out ColonistSaveState state))
+        {
+            transform.position = state.position;
+            mood = state.mood;
+            health = state.health;
+            hunger = state.hunger;
+            fatigue = state.fatigue;
+            stress = state.stress;
+            social = state.social;
+
+            jobPriorities.Clear();
+            if (state.allowedJobs != null)
+            {
+                foreach (var job in state.allowedJobs)
+                    jobPriorities.Add(job);
+            }
+            else
+            {
+                foreach (JobType jt in Enum.GetValues(typeof(JobType)))
+                    jobPriorities.Add(jt);
+            }
+
+            CancelTasks();
+            mentalBreak = false;
+            breakTimer = 0f;
+            wandering = false;
+            path = null;
+            pathIndex = 0;
+            actionTimer = 0f;
+            activity = state.activity ?? "Idle";
+        }
     }
 
     public void SetJobAllowed(JobType job, bool allowed)
