@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using FallowEarth.Navigation;
 using FallowEarth.Saving;
 using UnityEngine;
 
@@ -32,6 +33,9 @@ public class Colonist : SaveableMonoBehaviour
     private bool mentalBreak;
     private float breakTimer;
     public float breakDuration = 8f;
+    private PathfindingService pathfinding;
+    private readonly List<Vector2Int> reservedPath = new List<Vector2Int>();
+    private readonly Dictionary<Vector2Int, int> reservedPathSteps = new Dictionary<Vector2Int, int>();
 
     public bool IsBusy => currentTask != null;
 
@@ -41,6 +45,7 @@ public class Colonist : SaveableMonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         rb.gravityScale = 0f;
         baseMoveSpeed = moveSpeed;
+        pathfinding = PathfindingService.Instance;
 
         actionTimer = 0f;
         mentalBreak = false;
@@ -71,6 +76,11 @@ public class Colonist : SaveableMonoBehaviour
             map = FindObjectOfType<MapGenerator>();
         if (taskManager == null)
             taskManager = FindObjectOfType<TaskManager>();
+    }
+
+    void OnDestroy()
+    {
+        ReleaseReservedPath();
     }
 
     public override SaveCategory Category => SaveCategory.Creature;
@@ -134,8 +144,7 @@ public class Colonist : SaveableMonoBehaviour
             mentalBreak = false;
             breakTimer = 0f;
             wandering = false;
-            path = null;
-            pathIndex = 0;
+            ClearPath();
             actionTimer = 0f;
             activity = state.activity ?? "Idle";
         }
@@ -161,12 +170,14 @@ public class Colonist : SaveableMonoBehaviour
             ReleaseCurrentTaskReservation();
         }
 
+        ClearPath();
+
         currentTask = task;
         if (currentTask != null)
         {
             if (currentTask is BuildWallTask)
             {
-                path = null;
+                ClearPath();
             }
             else if (currentTask is RestTask rest)
             {
@@ -202,7 +213,7 @@ public class Colonist : SaveableMonoBehaviour
         }
 
         currentTask = null;
-        path = null;
+        ClearPath();
         activity = "Idle";
     }
 
@@ -220,6 +231,83 @@ public class Colonist : SaveableMonoBehaviour
         {
             restTask.ReleaseReservation();
         }
+    }
+
+    PathfindingService EnsurePathfindingService()
+    {
+        if (pathfinding == null)
+            pathfinding = PathfindingService.Instance;
+        return pathfinding;
+    }
+
+    void ReleaseReservedPath()
+    {
+        var service = EnsurePathfindingService();
+        service?.ReleaseAllReservations(this);
+        reservedPath.Clear();
+        reservedPathSteps.Clear();
+    }
+
+    bool ReservePathFor(List<Vector2Int> candidatePath)
+    {
+        reservedPath.Clear();
+        reservedPathSteps.Clear();
+
+        if (candidatePath == null || candidatePath.Count == 0)
+            return false;
+
+        var service = EnsurePathfindingService();
+        if (service == null)
+            return true;
+
+        var acquired = new List<Vector2Int>();
+        var acquiredSteps = new Dictionary<Vector2Int, int>();
+
+        for (int i = 0; i < candidatePath.Count; i++)
+        {
+            Vector2Int cell = candidatePath[i];
+            if (!service.TryReserve(cell, this))
+            {
+                foreach (var taken in acquired)
+                    service.ReleaseReservation(taken, this);
+                return false;
+            }
+
+            acquired.Add(cell);
+            acquiredSteps[cell] = i;
+        }
+
+        reservedPath.AddRange(acquired);
+        foreach (var kvp in acquiredSteps)
+            reservedPathSteps[kvp.Key] = kvp.Value;
+        return true;
+    }
+
+    void ReleaseVisitedReservations()
+    {
+        var service = EnsurePathfindingService();
+        if (service == null || reservedPath.Count == 0)
+            return;
+
+        for (int i = reservedPath.Count - 1; i >= 0; i--)
+        {
+            Vector2Int cell = reservedPath[i];
+            if (!reservedPathSteps.TryGetValue(cell, out int step))
+                continue;
+            if (step < pathIndex - 1)
+            {
+                service.ReleaseReservation(cell, this);
+                reservedPath.RemoveAt(i);
+                reservedPathSteps.Remove(cell);
+            }
+        }
+    }
+
+    void ClearPath()
+    {
+        ReleaseReservedPath();
+        path = null;
+        pathIndex = 0;
     }
 
     void Update()
@@ -257,7 +345,7 @@ public class Colonist : SaveableMonoBehaviour
             {
                 if (currentTask is BuildWallTask)
                 {
-                    path = null;
+                    ClearPath();
                 }
                 else if (currentTask is HaulLogTask haul && haul.stage == HaulLogTask.Stage.MoveToLog)
                 {
@@ -303,6 +391,9 @@ public class Colonist : SaveableMonoBehaviour
 
         if (path == null || pathIndex >= path.Count)
         {
+            if (path != null && pathIndex >= path.Count && currentTask == null)
+                ClearPath();
+
             if (!wandering && currentTask != null)
             {
                 if (currentTask is TimedTask timed)
@@ -353,6 +444,7 @@ public class Colonist : SaveableMonoBehaviour
         {
             rb.position = targetPos;
             pathIndex++;
+            ReleaseVisitedReservations();
         }
         else
         {
@@ -433,7 +525,7 @@ public class Colonist : SaveableMonoBehaviour
                     else
                     {
                         task.stage = BuildWallTask.Stage.CollectWood;
-                        path = null;
+                        ClearPath();
                     }
                 }
                 else
@@ -543,6 +635,32 @@ public class Colonist : SaveableMonoBehaviour
 
     List<Vector2Int> FindPath(Vector2Int start, Vector2Int goal)
     {
+        ReleaseReservedPath();
+
+        var service = EnsurePathfindingService();
+        if (service != null)
+        {
+            var result = service.FindPath(start, goal, this, PathfindingService.PathfindingAlgorithm.AStar, true);
+            if (result == null || result.Count == 0)
+                return null;
+
+            if (!ReservePathFor(result))
+            {
+                ReleaseReservedPath();
+                return null;
+            }
+
+            return result;
+        }
+
+        var fallback = LegacyFindPath(start, goal);
+        if (fallback == null || fallback.Count == 0)
+            return null;
+        return fallback;
+    }
+
+    List<Vector2Int> LegacyFindPath(Vector2Int start, Vector2Int goal)
+    {
         if (map == null)
         {
             return new List<Vector2Int> { goal };
@@ -550,7 +668,7 @@ public class Colonist : SaveableMonoBehaviour
 
         var open = new List<Node>();
         var closed = new HashSet<Vector2Int>();
-        Node startNode = new Node(start, 0, Heuristic(start, goal));
+        Node startNode = new Node(start, 0, LegacyHeuristic(start, goal));
         open.Add(startNode);
 
         int[,] dirs = new int[,] { {1,0}, {-1,0}, {0,1}, {0,-1} };
@@ -567,7 +685,7 @@ public class Colonist : SaveableMonoBehaviour
             closed.Add(current.pos);
 
             if (current.pos == goal)
-                return Reconstruct(current);
+                return LegacyReconstruct(current);
 
             for (int i = 0; i < 4; i++)
             {
@@ -579,7 +697,7 @@ public class Colonist : SaveableMonoBehaviour
                 Node existing = open.Find(n => n.pos == next);
                 if (existing == null)
                 {
-                    Node node = new Node(next, g, Heuristic(next, goal));
+                    Node node = new Node(next, g, LegacyHeuristic(next, goal));
                     node.parent = current;
                     open.Add(node);
                 }
@@ -591,16 +709,15 @@ public class Colonist : SaveableMonoBehaviour
             }
         }
 
-        // no path found
         return null;
     }
 
-    int Heuristic(Vector2Int a, Vector2Int b)
+    int LegacyHeuristic(Vector2Int a, Vector2Int b)
     {
         return Mathf.Abs(a.x - b.x) + Mathf.Abs(a.y - b.y);
     }
 
-    List<Vector2Int> Reconstruct(Node node)
+    List<Vector2Int> LegacyReconstruct(Node node)
     {
         List<Vector2Int> list = new List<Vector2Int>();
         while (node != null)

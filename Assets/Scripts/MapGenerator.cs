@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using FallowEarth.Navigation;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -667,6 +668,8 @@ public class MapGenerator : MonoBehaviour
                 passable[x, y] = cellPassable;
             }
         }
+
+        PathfindingService.Instance?.Initialize(width, height, passable);
     }
 
     private void ClearDecorationsAt(Vector3Int pos)
@@ -830,7 +833,10 @@ public class MapGenerator : MonoBehaviour
 
         treeTilemap.SetTile(new Vector3Int(x, y, 0), null);
         if (passable != null && InBounds(x, y))
+        {
             passable[x, y] = true;
+            PathfindingService.Instance?.SetWalkable(new Vector2Int(x, y), true);
+        }
 
         int amount = UnityEngine.Random.Range(30, 51);
         WoodLog.Create(new Vector2(x + 0.5f, y + 0.5f), amount);
@@ -850,7 +856,10 @@ public class MapGenerator : MonoBehaviour
 
         berryTilemap.SetTile(new Vector3Int(x, y, 0), null);
         if (passable != null && InBounds(x, y))
+        {
             passable[x, y] = true;
+            PathfindingService.Instance?.SetWalkable(new Vector2Int(x, y), true);
+        }
         var cell = new Vector2Int(x, y);
         berryTimers[cell] = berryGrowTime;
     }
@@ -896,6 +905,7 @@ public class MapGenerator : MonoBehaviour
 
         wallTilemap.SetTile(new Vector3Int(x, y, 0), wallTile);
         passable[x, y] = false;
+        PathfindingService.Instance?.SetWalkable(new Vector2Int(x, y), false);
     }
 
     public void PlaceWallFrame(int x, int y)
@@ -1063,7 +1073,10 @@ public class MapGenerator : MonoBehaviour
                     berryTilemap.SetColor(pos, berryColor);
                 }
                 if (passable != null && InBounds(cell.x, cell.y))
+                {
                     passable[cell.x, cell.y] = false;
+                    PathfindingService.Instance?.SetWalkable(cell, false);
+                }
                 berryTimers.Remove(cell);
             }
             else
