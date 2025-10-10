@@ -47,10 +47,10 @@ public class ColonistControlUI : MonoBehaviour
         panelObj.transform.SetParent(transform, false);
 
         panel = panelObj.GetComponent<RectTransform>();
-        panel.anchorMin = new Vector2(0.5f, 1f);
-        panel.anchorMax = new Vector2(0.5f, 1f);
-        panel.pivot = new Vector2(0.5f, 1f);
-        panel.anchoredPosition = new Vector2(0f, -20f);
+        panel.anchorMin = new Vector2(0f, 1f);
+        panel.anchorMax = new Vector2(0f, 1f);
+        panel.pivot = new Vector2(0f, 1f);
+        panel.anchoredPosition = new Vector2(20f, -20f);
 
         Image background = panelObj.AddComponent<Image>();
         background.color = new Color(1f, 1f, 1f, 0.85f);
