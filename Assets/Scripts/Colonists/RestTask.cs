@@ -11,7 +11,8 @@ public class RestTask : Task
     public Stage stage = Stage.MoveToBed;
     public float restTime;
 
-    public RestTask(Bed bed, float restTime) : base(Vector2.zero)
+    public RestTask(Bed bed, float restTime) : base(Vector2.zero, null, JobType.Rest, TaskPriority.High,
+        ColonistScheduleActivityMask.Sleep | ColonistScheduleActivityMask.Medical)
     {
         this.bed = bed;
         this.restTime = restTime;

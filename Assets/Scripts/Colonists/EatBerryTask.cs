@@ -8,7 +8,8 @@ public class EatBerryTask : TimedTask
     public Vector2Int cell;
 
     public EatBerryTask(Vector2Int cell, float duration, System.Action<Colonist> onComplete = null)
-        : base(new Vector2(cell.x + 0.5f, cell.y + 0.5f), duration, onComplete)
+        : base(new Vector2(cell.x + 0.5f, cell.y + 0.5f), duration, onComplete, JobType.Farm,
+            TaskPriority.High, ColonistScheduleActivityMask.Work | ColonistScheduleActivityMask.Recreation)
     {
         this.cell = cell;
     }

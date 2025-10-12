@@ -10,10 +10,26 @@ public class DayNightCycle : MonoBehaviour
     public float minutesPerDay = 2f;
 
     private Image overlay;
+    public static DayNightCycle Instance { get; private set; }
+    public float CurrentHour { get; private set; }
+    public int CurrentHourInt => Mathf.FloorToInt(CurrentHour);
+
+    void Awake()
+    {
+        if (Instance != null && Instance != this)
+            Destroy(Instance);
+        Instance = this;
+    }
 
     void Start()
     {
         SetupOverlay();
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this)
+            Instance = null;
     }
 
     void SetupOverlay()
@@ -51,6 +67,7 @@ public class DayNightCycle : MonoBehaviour
     {
         // Fraction of the current day (0..1) where 0 is midnight
         float t = (Time.time / (minutesPerDay * 60f)) % 1f;
+        CurrentHour = t * 24f;
         // Shift the cosine so that t=0 corresponds to midnight rather than noon
         float phase = Mathf.Cos((t - 0.5f) * Mathf.PI * 2f) * 0.5f + 0.5f; // 1 at noon, 0 at midnight
         float alpha = Mathf.Clamp01(1f - phase);
