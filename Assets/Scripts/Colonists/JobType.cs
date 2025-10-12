@@ -4,5 +4,7 @@ public enum JobType
     Chop,
     Haul,
     Farm,
-    Doctor
+    Doctor,
+    Rest,
+    Social
 }

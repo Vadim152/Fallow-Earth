@@ -13,7 +13,8 @@ public class SocializeTask : TimedTask
     /// </summary>
     public SocializeTask(Colonist partner, Vector2 meetingPoint, float duration,
         System.Action<Colonist> onComplete = null)
-        : base(meetingPoint, duration, onComplete)
+        : base(meetingPoint, duration, onComplete, JobType.Social, TaskPriority.Normal,
+            ColonistScheduleActivityMask.Recreation)
     {
         this.partner = partner;
     }

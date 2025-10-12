@@ -14,7 +14,8 @@ public class BuildWallTask : Task
     public WoodLog targetLog;
 
     public BuildWallTask(Vector2Int cell, float buildTime, int woodNeeded,
-        System.Action<Colonist> onComplete = null) : base(Vector2.zero, onComplete, JobType.Build)
+        System.Action<Colonist> onComplete = null) : base(Vector2.zero, onComplete, JobType.Build,
+            TaskPriority.High, ColonistScheduleActivityMask.Work)
     {
         this.cell = cell;
         this.buildTime = buildTime;

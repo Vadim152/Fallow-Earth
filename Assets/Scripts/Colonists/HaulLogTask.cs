@@ -12,7 +12,7 @@ public class HaulLogTask : Task
     public Stage stage = Stage.MoveToLog;
 
     public HaulLogTask(WoodLog log, Vector2Int targetCell)
-        : base(Vector2.zero, null, JobType.Haul)
+        : base(Vector2.zero, null, JobType.Haul, TaskPriority.High, ColonistScheduleActivityMask.Work)
     {
         this.log = log;
         this.targetCell = targetCell;
