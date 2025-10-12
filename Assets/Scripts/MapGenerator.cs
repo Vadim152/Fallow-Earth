@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using FallowEarth.Navigation;
+using FallowEarth.ResourcesSystem;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -839,7 +840,15 @@ public class MapGenerator : MonoBehaviour
         }
 
         int amount = UnityEngine.Random.Range(30, 51);
-        WoodLog.Create(new Vector2(x + 0.5f, y + 0.5f), amount);
+        var qualityRoll = UnityEngine.Random.value;
+        var quality = FallowEarth.ResourcesSystem.ResourceQuality.Common;
+        if (qualityRoll > 0.95f)
+            quality = FallowEarth.ResourcesSystem.ResourceQuality.Masterwork;
+        else if (qualityRoll > 0.8f)
+            quality = FallowEarth.ResourcesSystem.ResourceQuality.Fine;
+        else if (qualityRoll < 0.1f)
+            quality = FallowEarth.ResourcesSystem.ResourceQuality.Defective;
+        WoodLog.Create(new Vector2(x + 0.5f, y + 0.5f), amount, quality);
     }
 
     public bool HasBerries(int x, int y)

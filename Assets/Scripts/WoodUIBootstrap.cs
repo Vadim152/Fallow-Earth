@@ -5,7 +5,7 @@ public static class WoodUIBootstrap
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void Init()
     {
-        if (Object.FindObjectOfType<WoodResourceUI>() == null)
-            new GameObject("WoodResourceUI").AddComponent<WoodResourceUI>();
+        if (Object.FindObjectOfType<ResourceLedgerUI>() == null)
+            new GameObject("ResourceLedgerUI").AddComponent<ResourceLedgerUI>();
     }
 }

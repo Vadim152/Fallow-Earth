@@ -7,5 +7,7 @@ public static class ResourceManagerBootstrap
     {
         if (Object.FindObjectOfType<ResourceManager>() == null)
             new GameObject("ResourceManager").AddComponent<ResourceManager>();
+        if (Object.FindObjectOfType<FallowEarth.ResourcesSystem.ResourceLogisticsManager>() == null)
+            new GameObject("ResourceLogisticsManager").AddComponent<FallowEarth.ResourcesSystem.ResourceLogisticsManager>();
     }
 }

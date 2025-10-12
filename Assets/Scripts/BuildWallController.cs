@@ -1,7 +1,6 @@
+using FallowEarth.Construction;
 using UnityEngine;
 using UnityEngine.EventSystems;
-
-using System.Collections.Generic;
 
 public class BuildWallController : MonoBehaviour
 {
@@ -9,12 +8,27 @@ public class BuildWallController : MonoBehaviour
     private TaskManager taskManager;
     private bool placing;
 
+    [SerializeField] private string materialId = DefaultMaterialIds.Timber;
+    [SerializeField] private int level;
+
     public bool IsPlacing => placing;
 
     void Start()
     {
         map = FindObjectOfType<MapGenerator>();
         taskManager = FindObjectOfType<TaskManager>();
+        ConstructionPlanner.EnsureInstance();
+    }
+
+    public void SetMaterial(string newMaterialId)
+    {
+        if (!string.IsNullOrEmpty(newMaterialId))
+            materialId = newMaterialId;
+    }
+
+    public void SetLevel(int newLevel)
+    {
+        level = Mathf.Max(0, newLevel);
     }
 
     public void TogglePlacing()
@@ -73,9 +87,16 @@ public class BuildWallController : MonoBehaviour
 
     void QueueBuildTask(Vector2Int cell)
     {
-        taskManager.AddTask(new BuildWallTask(cell, 1f, 10, c =>
+        var planner = ConstructionPlanner.Instance;
+        ConstructionProject project = null;
+        if (planner != null)
+        {
+            project = planner.GetOrCreateProject(cell, level, ConstructionType.Wall, materialId, 1f);
+        }
+        taskManager.AddTask(new BuildWallTask(cell, 1f, project, c =>
         {
             map.BuildWallFromFrame(cell.x, cell.y);
+            planner?.CompleteProject(project);
         }));
     }
 }

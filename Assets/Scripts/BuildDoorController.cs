@@ -1,3 +1,4 @@
+using FallowEarth.Construction;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -7,13 +8,21 @@ public class BuildDoorController : MonoBehaviour
     private TaskManager taskManager;
     private bool placing;
 
+    [SerializeField] private string materialId = DefaultMaterialIds.Timber;
+    [SerializeField] private int level;
+
     public bool IsPlacing => placing;
 
     void Start()
     {
         map = FindObjectOfType<MapGenerator>();
         taskManager = FindObjectOfType<TaskManager>();
+        ConstructionPlanner.EnsureInstance();
     }
+
+    public void SetMaterial(string newMaterialId) => materialId = string.IsNullOrEmpty(newMaterialId) ? materialId : newMaterialId;
+
+    public void SetLevel(int newLevel) => level = Mathf.Max(0, newLevel);
 
     public void TogglePlacing()
     {
@@ -71,9 +80,14 @@ public class BuildDoorController : MonoBehaviour
 
     void QueueBuildTask(Vector2Int cell)
     {
-        taskManager.AddTask(new BuildDoorTask(cell, 1f, 10, c =>
+        var planner = ConstructionPlanner.Instance;
+        ConstructionProject project = null;
+        if (planner != null)
+            project = planner.GetOrCreateProject(cell, level, ConstructionType.Door, materialId, 1f);
+        taskManager.AddTask(new BuildDoorTask(cell, 1f, project, c =>
         {
             map.BuildDoorFromFrame(cell.x, cell.y);
+            planner?.CompleteProject(project);
         }));
     }
 }
