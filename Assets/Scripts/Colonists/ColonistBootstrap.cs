@@ -18,6 +18,8 @@ public static class ColonistBootstrap
 
         WorldDataManager.Instance.WorldDataLoaded -= HandleWorldDataLoaded;
         WorldDataManager.Instance.WorldDataLoaded += HandleWorldDataLoaded;
+        WorldDataManager.Instance.RegionLoaded -= HandleRegionLoaded;
+        WorldDataManager.Instance.RegionLoaded += HandleRegionLoaded;
     }
 
     static void HandleWorldDataLoaded(WorldSaveData data)
@@ -25,6 +27,11 @@ public static class ColonistBootstrap
         if (HasColonistsInSave(data))
             return;
 
+        SpawnIfNeeded();
+    }
+
+    static void HandleRegionLoaded(Vector2Int _)
+    {
         SpawnIfNeeded();
     }
 
