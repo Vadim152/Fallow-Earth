@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using FallowEarth.Navigation;
+using FallowEarth.ResourcesSystem;
 using FallowEarth.Saving;
 using UnityEngine;
 
@@ -490,9 +491,9 @@ public class Colonist : SaveableMonoBehaviour
             {
                 path = FindPath(Vector2Int.FloorToInt(transform.position), Vector2Int.FloorToInt(rest.bed.transform.position));
             }
-            else if (currentTask is HaulLogTask haul && haul.stage == HaulLogTask.Stage.MoveToLog)
+            else if (currentTask is HaulLogTask haul && haul.stage == HaulLogTask.Stage.MoveToItem && haul.item != null)
             {
-                path = FindPath(Vector2Int.FloorToInt(transform.position), Vector2Int.FloorToInt(haul.log.transform.position));
+                path = FindPath(Vector2Int.FloorToInt(transform.position), Vector2Int.FloorToInt(haul.item.transform.position));
             }
             else
             {
@@ -684,9 +685,9 @@ public class Colonist : SaveableMonoBehaviour
                 {
                     ClearPath();
                 }
-                else if (currentTask is HaulLogTask haul && haul.stage == HaulLogTask.Stage.MoveToLog)
+                else if (currentTask is HaulLogTask haul && haul.stage == HaulLogTask.Stage.MoveToItem && haul.item != null)
                 {
-                    path = FindPath(Vector2Int.FloorToInt(transform.position), Vector2Int.FloorToInt(haul.log.transform.position));
+                    path = FindPath(Vector2Int.FloorToInt(transform.position), Vector2Int.FloorToInt(haul.item.transform.position));
                 }
                 else
                 {
@@ -809,55 +810,68 @@ public class Colonist : SaveableMonoBehaviour
     {
         switch (task.stage)
         {
-            case BuildWallTask.Stage.CollectWood:
-                if (ResourceManager.Instance != null && ResourceManager.Instance.Wood >= task.woodNeeded)
+            case BuildWallTask.Stage.AcquireMaterials:
+                if (task.project == null || !task.project.HasPendingResources)
                 {
-                    task.stage = BuildWallTask.Stage.MoveToSite;
-                    path = FindPath(Vector2Int.FloorToInt(transform.position), task.cell);
-                    pathIndex = 0;
-                }
-                else
-                {
-                    if (task.targetLog == null)
+                    if (task.project == null || task.project.TryConsumeResources())
                     {
-                        var logs = GameObject.FindObjectsOfType<WoodLog>();
-                        float best = float.MaxValue;
-                        WoodLog chosen = null;
-                        foreach (var l in logs)
+                        task.stage = BuildWallTask.Stage.MoveToSite;
+                        path = FindPath(Vector2Int.FloorToInt(transform.position), task.cell);
+                        pathIndex = 0;
+                        break;
+                    }
+                }
+
+                if (task.project != null && task.project.HasPendingResources)
+                {
+                    var requirement = task.project.PeekNextRequirement();
+                    if (requirement.HasValue)
+                    {
+                        if (task.targetItem == null)
                         {
-                            if (l.Reserved)
-                                continue;
-                            float d = Vector2.Distance(transform.position, l.transform.position);
-                            if (d < best)
+                            ResourceItem chosen = null;
+                            float best = float.MaxValue;
+                            foreach (var item in ResourceLogisticsManager.GetTrackedItems())
                             {
-                                best = d;
-                                chosen = l;
+                                if (item == null || item.Reserved)
+                                    continue;
+                                if (item.Stack.Definition.Id != requirement.Value.Definition.Id)
+                                    continue;
+                                if (item.Stack.Quality < requirement.Value.MinimumQuality)
+                                    continue;
+                                float d = Vector2.Distance(transform.position, item.transform.position);
+                                if (d < best)
+                                {
+                                    best = d;
+                                    chosen = item;
+                                }
+                            }
+                            if (chosen != null)
+                            {
+                                chosen.Reserved = true;
+                                task.targetItem = chosen;
+                                path = FindPath(Vector2Int.FloorToInt(transform.position), Vector2Int.FloorToInt(chosen.transform.position));
+                                pathIndex = 0;
+                                if (path == null)
+                                {
+                                    chosen.Reserved = false;
+                                    task.targetItem = null;
+                                    activity = "Idle";
+                                    return;
+                                }
+                            }
+                            else
+                            {
+                                activity = "Idle";
+                                return;
                             }
                         }
-                        if (chosen == null)
+                        else if (path == null || pathIndex >= path.Count)
                         {
-                            activity = "Idle";
-                            return;
-                        }
-                        chosen.Reserved = true;
-                        task.targetLog = chosen;
-                        path = FindPath(Vector2Int.FloorToInt(transform.position), Vector2Int.FloorToInt(chosen.transform.position));
-                        pathIndex = 0;
-                    }
-                    else if (path == null || pathIndex >= path.Count)
-                    {
-                        ResourceManager.AddWood(task.targetLog.Amount);
-                        UnityEngine.Object.Destroy(task.targetLog.gameObject);
-                        task.targetLog = null;
-                        if (ResourceManager.Instance != null && ResourceManager.Instance.Wood >= task.woodNeeded)
-                        {
-                            task.stage = BuildWallTask.Stage.MoveToSite;
-                            path = FindPath(Vector2Int.FloorToInt(transform.position), task.cell);
-                            pathIndex = 0;
-                        }
-                        else
-                        {
-                            task.targetLog = null;
+                            ResourceManager.Add(task.targetItem.Stack);
+                            UnityEngine.Object.Destroy(task.targetItem.gameObject);
+                            task.targetItem = null;
+                            task.project.TryConsumeResources();
                         }
                     }
                 }
@@ -867,14 +881,14 @@ public class Colonist : SaveableMonoBehaviour
             case BuildWallTask.Stage.MoveToSite:
                 if (path == null || pathIndex >= path.Count)
                 {
-                    if (ResourceManager.Instance != null && ResourceManager.Instance.Wood >= task.woodNeeded)
+                    if (task.project == null || !task.project.HasPendingResources)
                     {
                         task.stage = BuildWallTask.Stage.Build;
                         actionTimer = task.buildTime;
                     }
                     else
                     {
-                        task.stage = BuildWallTask.Stage.CollectWood;
+                        task.stage = BuildWallTask.Stage.AcquireMaterials;
                         ClearPath();
                     }
                 }
@@ -888,7 +902,8 @@ public class Colonist : SaveableMonoBehaviour
                 actionTimer -= Time.deltaTime;
                 if (actionTimer <= 0f)
                 {
-                    if (ResourceManager.UseWood(task.woodNeeded))
+                    task.project?.AddWork(1f);
+                    if (task.project == null || task.project.IsCompleted)
                     {
                         task.onComplete?.Invoke(this);
                         currentTask = null;
@@ -896,7 +911,8 @@ public class Colonist : SaveableMonoBehaviour
                     }
                     else
                     {
-                        task.stage = BuildWallTask.Stage.CollectWood;
+                        task.stage = BuildWallTask.Stage.Build;
+                        actionTimer = task.buildTime;
                     }
                 }
                 break;
@@ -907,8 +923,8 @@ public class Colonist : SaveableMonoBehaviour
     {
         switch (task.stage)
         {
-            case HaulLogTask.Stage.MoveToLog:
-                if (task.log == null)
+            case HaulLogTask.Stage.MoveToItem:
+                if (task.item == null)
                 {
                     currentTask = null;
                     activity = "Idle";
@@ -930,10 +946,11 @@ public class Colonist : SaveableMonoBehaviour
             case HaulLogTask.Stage.MoveToZone:
                 if (path == null || pathIndex >= path.Count)
                 {
-                    if (task.log != null)
+                    if (task.item != null)
                     {
-                        ResourceManager.AddWood(task.log.Amount);
-                        UnityEngine.Object.Destroy(task.log.gameObject);
+                        ResourceManager.Add(task.item.Stack);
+                        UnityEngine.Object.Destroy(task.item.gameObject);
+                        task.ReleaseReservation();
                     }
                     currentTask = null;
                     activity = "Idle";

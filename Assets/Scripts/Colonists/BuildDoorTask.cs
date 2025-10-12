@@ -1,3 +1,4 @@
+using FallowEarth.Construction;
 using UnityEngine;
 
 /// <summary>
@@ -5,8 +6,8 @@ using UnityEngine;
 /// </summary>
 public class BuildDoorTask : BuildWallTask
 {
-    public BuildDoorTask(Vector2Int cell, float buildTime, int woodNeeded,
-        System.Action<Colonist> onComplete = null) : base(cell, buildTime, woodNeeded, onComplete)
+    public BuildDoorTask(Vector2Int cell, float buildTime, ConstructionProject project,
+        System.Action<Colonist> onComplete = null) : base(cell, buildTime, project, onComplete)
     {
     }
 }

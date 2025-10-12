@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
+using FallowEarth.ResourcesSystem;
 using FallowEarth.Saving;
 using UnityEngine;
 
 /// <summary>
-/// Simple representation of a stockpile zone.
-/// Stores a set of map cells that belong to the zone.
+/// Representation of a stockpile zone supporting resource filtering and logistics prioritisation.
 /// </summary>
 public class StockpileZone : ISaveable, IMutableSaveId, IDisposable
 {
@@ -15,18 +15,24 @@ public class StockpileZone : ISaveable, IMutableSaveId, IDisposable
 
     private string saveId;
 
+    public ResourceFilter Filter { get; } = new ResourceFilter();
+    public int Priority { get; set; }
+
     public StockpileZone()
     {
         AllZones.Add(this);
+        Filter.AllowAllQualities();
     }
 
-    public static StockpileZone Create(IEnumerable<Vector2Int> newCells)
+    public static StockpileZone Create(IEnumerable<Vector2Int> newCells, int priority = 0)
     {
         var zone = new StockpileZone();
         zone.cells = new HashSet<Vector2Int>(newCells);
         zone.saveId = Guid.NewGuid().ToString();
+        zone.Priority = priority;
         if (WorldDataManager.HasInstance)
             WorldDataManager.Instance.Register(zone);
+        ResourceLogisticsManager.RegisterZone(zone);
         return zone;
     }
 
@@ -38,14 +44,28 @@ public class StockpileZone : ISaveable, IMutableSaveId, IDisposable
         Vector2Int bestCell = Vector2Int.zero;
         foreach (var z in AllZones)
         {
-            foreach (var c in z.cells)
+            Vector2Int candidate = z.GetClosestCellTo(pos);
+            float d = Vector2.Distance(pos, (Vector2)candidate);
+            if (d < best)
             {
-                float d = Vector2.Distance(pos, c);
-                if (d < best)
-                {
-                    best = d;
-                    bestCell = c;
-                }
+                best = d;
+                bestCell = candidate;
+            }
+        }
+        return bestCell;
+    }
+
+    public Vector2Int GetClosestCellTo(Vector2 pos)
+    {
+        float best = float.MaxValue;
+        Vector2Int bestCell = Vector2Int.zero;
+        foreach (var c in cells)
+        {
+            float d = Vector2.Distance(pos, (Vector2)c);
+            if (d < best)
+            {
+                best = d;
+                bestCell = c;
             }
         }
         return bestCell;
@@ -55,6 +75,7 @@ public class StockpileZone : ISaveable, IMutableSaveId, IDisposable
     {
         AllZones.Remove(this);
         cells.Clear();
+        ResourceLogisticsManager.UnregisterZone(this);
     }
 
     public string SaveId => saveId;
@@ -82,13 +103,15 @@ public class StockpileZone : ISaveable, IMutableSaveId, IDisposable
     private struct ZoneSaveState
     {
         public List<Vector2Int> cells;
+        public int priority;
     }
 
     public void PopulateSaveData(SaveData saveData)
     {
         saveData.Set("zone", new ZoneSaveState
         {
-            cells = cells != null ? new List<Vector2Int>(cells) : new List<Vector2Int>()
+            cells = cells != null ? new List<Vector2Int>(cells) : new List<Vector2Int>(),
+            priority = Priority
         });
     }
 
@@ -97,11 +120,14 @@ public class StockpileZone : ISaveable, IMutableSaveId, IDisposable
         if (saveData.TryGet("zone", out ZoneSaveState state) && state.cells != null)
         {
             cells = new HashSet<Vector2Int>(state.cells);
+            Priority = state.priority;
         }
         else
         {
             cells = new HashSet<Vector2Int>();
+            Priority = 0;
         }
+        ResourceLogisticsManager.RegisterZone(this);
     }
 
     public void SetSaveId(string newId)

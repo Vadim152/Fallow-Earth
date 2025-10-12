@@ -1,31 +1,32 @@
+using FallowEarth.ResourcesSystem;
 using UnityEngine;
 
 /// <summary>
-/// Task for hauling a wood log to a stockpile zone.
+/// Generic hauling task that moves a resource item into a storage cell.
 /// </summary>
 public class HaulLogTask : Task
 {
-    public enum Stage { MoveToLog, MoveToZone }
+    public enum Stage { MoveToItem, MoveToZone }
 
-    public WoodLog log;
+    public ResourceItem item;
     public Vector2Int targetCell;
-    public Stage stage = Stage.MoveToLog;
+    public Stage stage = Stage.MoveToItem;
 
-    public HaulLogTask(WoodLog log, Vector2Int targetCell)
+    public HaulLogTask(ResourceItem item, Vector2Int targetCell)
         : base(Vector2.zero, null, JobType.Haul, TaskPriority.High, ColonistScheduleActivityMask.Work)
     {
-        this.log = log;
+        this.item = item;
         this.targetCell = targetCell;
-        if (log != null)
-            log.Reserved = true;
+        if (item != null)
+            item.Reserved = true;
     }
 
     public void ReleaseReservation()
     {
-        if (log != null)
+        if (item != null)
         {
-            log.Reserved = false;
+            item.Reserved = false;
         }
-        log = null;
+        item = null;
     }
 }

@@ -1,33 +1,36 @@
+using FallowEarth.Construction;
+using FallowEarth.ResourcesSystem;
 using UnityEngine;
 
 /// <summary>
-/// Task that handles collecting wood logs and building a wall frame.
+/// Task that handles collecting building materials and completing a wall project.
 /// </summary>
 public class BuildWallTask : Task
 {
-    public enum Stage { CollectWood, MoveToSite, Build }
+    public enum Stage { AcquireMaterials, MoveToSite, Build }
 
     public Vector2Int cell;
-    public int woodNeeded;
     public float buildTime;
-    public Stage stage = Stage.CollectWood;
-    public WoodLog targetLog;
+    public Stage stage = Stage.AcquireMaterials;
+    public ResourceItem targetItem;
+    public ConstructionProject project;
 
-    public BuildWallTask(Vector2Int cell, float buildTime, int woodNeeded,
-        System.Action<Colonist> onComplete = null) : base(Vector2.zero, onComplete, JobType.Build,
+    public BuildWallTask(Vector2Int cell, float buildTime, ConstructionProject project,
+        System.Action<Colonist> onComplete = null)
+        : base(Vector2.zero, onComplete, JobType.Build,
             TaskPriority.High, ColonistScheduleActivityMask.Work)
     {
         this.cell = cell;
         this.buildTime = buildTime;
-        this.woodNeeded = woodNeeded;
+        this.project = project;
     }
 
     public void ReleaseReservation()
     {
-        if (targetLog != null)
+        if (targetItem != null)
         {
-            targetLog.Reserved = false;
+            targetItem.Reserved = false;
         }
-        targetLog = null;
+        targetItem = null;
     }
 }
