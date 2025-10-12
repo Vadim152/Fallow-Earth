@@ -10,6 +10,11 @@ namespace FallowEarth.MapGeneration
         void Apply(TilemapApplierContext context);
     }
 
+    public interface IMountainThresholdProvider
+    {
+        float MountainThreshold { get; }
+    }
+
     public abstract class TilemapApplierBase : ScriptableObject, ITilemapApplier
     {
         public abstract void Apply(TilemapApplierContext context);

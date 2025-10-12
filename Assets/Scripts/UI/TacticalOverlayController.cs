@@ -149,7 +149,7 @@ public class TacticalOverlayController : MonoBehaviour
         {
             case OverlayType.Temperature:
                 float temp = map.TemperatureMap[x, y];
-                float normalized = Mathf.InverseLerp(map.minTemperature, map.maxTemperature, temp);
+                float normalized = Mathf.InverseLerp(map.MinTemperature, map.MaxTemperature, temp);
                 return Mathf.Clamp01(normalized);
             case OverlayType.Lighting:
                 float baseLight = 1f;
@@ -163,9 +163,9 @@ public class TacticalOverlayController : MonoBehaviour
                 return Mathf.Clamp01(baseLight * 0.7f + noise);
             case OverlayType.Danger:
                 Vector2Int cell = new Vector2Int(x, y);
-                bool nearWater = map.WaterCells != null && map.WaterCells.Contains(cell);
+                bool nearWater = map.WaterCells != null && map.IsWaterCell(cell);
                 float height = map.HeightMap != null ? map.HeightMap[x, y] : 0f;
-                float steep = Mathf.InverseLerp(map.mountainThreshold - 0.05f, 1f, height);
+                float steep = Mathf.InverseLerp(map.MountainThreshold - 0.05f, 1f, height);
                 return Mathf.Clamp01(nearWater ? 1f : steep);
             default:
                 return 0f;

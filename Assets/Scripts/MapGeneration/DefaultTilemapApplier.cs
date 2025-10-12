@@ -4,7 +4,7 @@ using UnityEngine.Tilemaps;
 namespace FallowEarth.MapGeneration
 {
     [CreateAssetMenu(fileName = "DefaultTilemapApplier", menuName = "World/Map Generation/Tiles/Default")]
-    public class DefaultTilemapApplier : TilemapApplierBase
+    public class DefaultTilemapApplier : TilemapApplierBase, IMountainThresholdProvider
     {
         [SerializeField, Range(0f, 1f)]
         private float mountainThreshold = 0.78f;
@@ -14,6 +14,8 @@ namespace FallowEarth.MapGeneration
 
         [SerializeField, Range(0f, 1f)]
         private float berryProbability = 0.05f;
+
+        public float MountainThreshold => mountainThreshold;
 
         public override void Apply(TilemapApplierContext context)
         {

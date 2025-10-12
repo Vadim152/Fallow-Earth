@@ -103,6 +103,9 @@ public class MapGenerator : MonoBehaviour
     public float[,] HumidityMap => humidityMapCache;
     public BiomeDefinition[,] BiomeMap => biomeMapCache;
     public IReadOnlyCollection<Vector2Int> WaterCells => waterCellsCache;
+    public float MinTemperature { get; private set; }
+    public float MaxTemperature { get; private set; }
+    public float MountainThreshold { get; private set; } = 0.78f;
 
     /// <summary>
     /// Prepare a new zone tile using a random dim color. Call this before
@@ -237,6 +240,7 @@ public class MapGenerator : MonoBehaviour
         heightMapCache = heightMapGenerator?.GenerateHeightMap(width, height, heightOffset) ?? new float[width, height];
         waterCellsCache = waterSimulator?.SimulateWater(heightMapCache) ?? new HashSet<Vector2Int>();
         temperatureMapCache = temperatureGenerator?.GenerateTemperatureMap(heightMapCache, temperatureOffset) ?? new float[width, height];
+        UpdateTemperatureExtents();
         humidityMapCache = humidityGenerator?.GenerateHumidityMap(heightMapCache, waterCellsCache, humidityOffset) ?? new float[width, height];
         biomeMapCache = biomePainter?.PaintBiomes(heightMapCache, temperatureMapCache, humidityMapCache) ?? new BiomeDefinition[width, height];
 
@@ -246,6 +250,8 @@ public class MapGenerator : MonoBehaviour
             tilemapApplier.Apply(context);
             passable = context.Passable;
         }
+
+        MountainThreshold = ResolveMountainThreshold();
 
         PathfindingService.Instance?.Initialize(width, height, passable);
     }
@@ -322,11 +328,59 @@ public class MapGenerator : MonoBehaviour
         return new Vector2(UnityEngine.Random.Range(0f, 1000f), UnityEngine.Random.Range(0f, 1000f));
     }
 
+    private void UpdateTemperatureExtents()
+    {
+        if (temperatureMapCache == null)
+        {
+            MinTemperature = 0f;
+            MaxTemperature = 0f;
+            return;
+        }
+
+        int tempWidth = temperatureMapCache.GetLength(0);
+        int tempHeight = temperatureMapCache.GetLength(1);
+
+        float min = float.PositiveInfinity;
+        float max = float.NegativeInfinity;
+
+        for (int x = 0; x < tempWidth; x++)
+        {
+            for (int y = 0; y < tempHeight; y++)
+            {
+                float value = temperatureMapCache[x, y];
+                if (value < min)
+                    min = value;
+                if (value > max)
+                    max = value;
+            }
+        }
+
+        if (float.IsPositiveInfinity(min))
+            min = 0f;
+        if (float.IsNegativeInfinity(max))
+            max = 0f;
+
+        MinTemperature = min;
+        MaxTemperature = max;
+    }
+
+    private float ResolveMountainThreshold()
+    {
+        if (tilemapApplier is IMountainThresholdProvider provider)
+            return provider.MountainThreshold;
+        return MountainThreshold;
+    }
+
     public bool IsPassable(int x, int y)
     {
         if (!InBounds(x, y))
             return false;
         return passable[x, y];
+    }
+
+    public bool IsWaterCell(Vector2Int cell)
+    {
+        return waterCellsCache != null && waterCellsCache.Contains(cell);
     }
 
     private bool InBounds(int x, int y)
