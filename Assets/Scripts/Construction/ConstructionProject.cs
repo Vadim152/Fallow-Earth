@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using FallowEarth.Infrastructure;
 using FallowEarth.ResourcesSystem;
 using UnityEngine;
 
@@ -50,7 +51,8 @@ namespace FallowEarth.Construction
             if (pendingResources.Count == 0)
                 return true;
             var request = pendingResources.Peek();
-            if (ResourceManager.TryConsume(new[] { request }))
+            if (GameServices.TryResolve(out IResourceManager resourceManager) &&
+                resourceManager.TryConsume(new[] { request }))
             {
                 pendingResources.Dequeue();
                 return true;

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using FallowEarth.Infrastructure;
 using FallowEarth.ResourcesSystem;
 using FallowEarth.Saving;
 using UnityEngine;
@@ -32,7 +33,8 @@ public class StockpileZone : ISaveable, IMutableSaveId, IDisposable
         zone.Priority = priority;
         if (WorldDataManager.HasInstance)
             WorldDataManager.Instance.Register(zone);
-        ResourceLogisticsManager.RegisterZone(zone);
+        if (GameServices.TryResolve<IResourceLogisticsService>(out var logistics))
+            logistics.RegisterZone(zone);
         return zone;
     }
 
@@ -75,7 +77,8 @@ public class StockpileZone : ISaveable, IMutableSaveId, IDisposable
     {
         AllZones.Remove(this);
         cells.Clear();
-        ResourceLogisticsManager.UnregisterZone(this);
+        if (GameServices.TryResolve<IResourceLogisticsService>(out var logistics))
+            logistics.UnregisterZone(this);
     }
 
     public string SaveId => saveId;
@@ -127,7 +130,8 @@ public class StockpileZone : ISaveable, IMutableSaveId, IDisposable
             cells = new HashSet<Vector2Int>();
             Priority = 0;
         }
-        ResourceLogisticsManager.RegisterZone(this);
+        if (GameServices.TryResolve<IResourceLogisticsService>(out var logistics))
+            logistics.RegisterZone(this);
     }
 
     public void SetSaveId(string newId)

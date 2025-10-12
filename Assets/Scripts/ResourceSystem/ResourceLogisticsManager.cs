@@ -6,62 +6,47 @@ namespace FallowEarth.ResourcesSystem
     /// <summary>
     /// Coordinates hauling routes between loose resources and storage zones.
     /// </summary>
-    public class ResourceLogisticsManager : MonoBehaviour
+    public class ResourceLogisticsManager : MonoBehaviour, IResourceLogisticsService
     {
-        public static ResourceLogisticsManager Instance { get; private set; }
-
         private readonly ResourceRouteGraph routeGraph = new ResourceRouteGraph();
         private readonly HashSet<ResourceItem> trackedItems = new HashSet<ResourceItem>();
         private readonly List<ResourceItem> snapshotBuffer = new List<ResourceItem>();
 
-        void Awake()
+        public ResourceRouteGraph RouteGraph => routeGraph;
+
+        public void RegisterZone(StockpileZone zone)
         {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
+            if (zone == null)
                 return;
-            }
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
+            routeGraph.RegisterZone(zone, zone.Priority);
         }
 
-        public static ResourceRouteGraph RouteGraph => Instance?.routeGraph;
-
-        public static void RegisterZone(StockpileZone zone)
+        public void UnregisterZone(StockpileZone zone)
         {
-            if (Instance == null || zone == null)
+            if (zone == null)
                 return;
-            Instance.routeGraph.RegisterZone(zone, zone.Priority);
+            routeGraph.UnregisterZone(zone);
         }
 
-        public static void UnregisterZone(StockpileZone zone)
+        public void RegisterItem(ResourceItem item)
         {
-            if (Instance == null || zone == null)
+            if (item == null)
                 return;
-            Instance.routeGraph.UnregisterZone(zone);
+            trackedItems.Add(item);
         }
 
-        public static void RegisterItem(ResourceItem item)
+        public void UnregisterItem(ResourceItem item)
         {
-            if (Instance == null || item == null)
+            if (item == null)
                 return;
-            Instance.trackedItems.Add(item);
+            trackedItems.Remove(item);
         }
 
-        public static void UnregisterItem(ResourceItem item)
+        public IReadOnlyCollection<ResourceItem> GetTrackedItems()
         {
-            if (Instance == null || item == null)
-                return;
-            Instance.trackedItems.Remove(item);
-        }
-
-        public static IReadOnlyCollection<ResourceItem> GetTrackedItems()
-        {
-            if (Instance == null)
-                return System.Array.Empty<ResourceItem>();
-            Instance.snapshotBuffer.Clear();
-            Instance.snapshotBuffer.AddRange(Instance.trackedItems);
-            return Instance.snapshotBuffer;
+            snapshotBuffer.Clear();
+            snapshotBuffer.AddRange(trackedItems);
+            return snapshotBuffer;
         }
     }
 }

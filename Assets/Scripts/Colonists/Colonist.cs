@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using FallowEarth.Infrastructure;
 using FallowEarth.Navigation;
 using FallowEarth.ResourcesSystem;
 using FallowEarth.Saving;
@@ -48,6 +49,8 @@ public class Colonist : SaveableMonoBehaviour
     private PathfindingService pathfinding;
     private readonly List<Vector2Int> reservedPath = new List<Vector2Int>();
     private readonly Dictionary<Vector2Int, int> reservedPathSteps = new Dictionary<Vector2Int, int>();
+    private IResourceManager resourceManager;
+    private IResourceLogisticsService resourceLogistics;
 
     public bool IsBusy => currentTask != null;
     public ColonistRoleProfile RoleProfile => roleProfile;
@@ -80,6 +83,9 @@ public class Colonist : SaveableMonoBehaviour
 
         map = FindObjectOfType<MapGenerator>();
         taskManager = FindObjectOfType<TaskManager>();
+
+        GameServices.TryResolve(out resourceManager);
+        GameServices.TryResolve(out resourceLogistics);
 
         InitializeNeedSystem();
         InitializeRoleProfile();
@@ -846,7 +852,13 @@ public class Colonist : SaveableMonoBehaviour
                         {
                             ResourceItem chosen = null;
                             float best = float.MaxValue;
-                            foreach (var item in ResourceLogisticsManager.GetTrackedItems())
+                            if (!TryGetResourceLogistics(out var logistics))
+                            {
+                                activity = "Idle";
+                                return;
+                            }
+
+                            foreach (var item in logistics.GetTrackedItems())
                             {
                                 if (item == null || item.Reserved)
                                     continue;
@@ -883,7 +895,8 @@ public class Colonist : SaveableMonoBehaviour
                         }
                         else if (path == null || pathIndex >= path.Count)
                         {
-                            ResourceManager.Add(task.targetItem.Stack);
+                            if (TryGetResourceManager(out var manager))
+                                manager.Add(task.targetItem.Stack);
                             UnityEngine.Object.Destroy(task.targetItem.gameObject);
                             task.targetItem = null;
                             task.project.TryConsumeResources();
@@ -963,7 +976,8 @@ public class Colonist : SaveableMonoBehaviour
                 {
                     if (task.item != null)
                     {
-                        ResourceManager.Add(task.item.Stack);
+                        if (TryGetResourceManager(out var manager))
+                            manager.Add(task.item.Stack);
                         UnityEngine.Object.Destroy(task.item.gameObject);
                         task.ReleaseReservation();
                     }
@@ -1387,6 +1401,42 @@ public class Colonist : SaveableMonoBehaviour
         float moodPenalty = needs.GetMoodImpact();
         mood = Mathf.Clamp01(0.65f - moodPenalty + traitMoodModifier + relationshipMood);
         health = Mathf.Clamp01(healthSystem.OverallHealth);
+    }
+
+    bool TryGetResourceManager(out IResourceManager manager)
+    {
+        if (resourceManager != null)
+        {
+            manager = resourceManager;
+            return true;
+        }
+
+        if (GameServices.TryResolve(out manager))
+        {
+            resourceManager = manager;
+            return true;
+        }
+
+        manager = null;
+        return false;
+    }
+
+    bool TryGetResourceLogistics(out IResourceLogisticsService logistics)
+    {
+        if (resourceLogistics != null)
+        {
+            logistics = resourceLogistics;
+            return true;
+        }
+
+        if (GameServices.TryResolve(out logistics))
+        {
+            resourceLogistics = logistics;
+            return true;
+        }
+
+        logistics = null;
+        return false;
     }
 
     Sprite CreateColoredSprite(Color color)

@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 using FallowEarth.ResourcesSystem;
+using FallowEarth.Infrastructure;
+using UnityEngine;
 
 public class TaskManager : MonoBehaviour
 {
@@ -72,16 +73,16 @@ public class TaskManager : MonoBehaviour
             }
         }
 
-        if (StockpileZone.HasAny)
+        if (StockpileZone.HasAny && GameServices.TryResolve<IResourceLogisticsService>(out var logistics))
         {
-            var items = ResourceLogisticsManager.GetTrackedItems();
+            var items = logistics.GetTrackedItems();
             foreach (var item in items)
             {
                 if (item == null || item.Reserved)
                     continue;
 
-                if (ResourceLogisticsManager.RouteGraph != null &&
-                    ResourceLogisticsManager.RouteGraph.TryFindBestZone(item.Stack, item.transform.position, out var zone))
+                if (logistics.RouteGraph != null &&
+                    logistics.RouteGraph.TryFindBestZone(item.Stack, item.transform.position, out var zone))
                 {
                     Vector2Int target = zone.GetClosestCellTo(item.transform.position);
                     bool canWorkNow = colonist == null || (activityMask & ColonistScheduleActivityMask.Work) != 0;

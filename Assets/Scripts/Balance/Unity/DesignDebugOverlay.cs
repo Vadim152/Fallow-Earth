@@ -1,4 +1,6 @@
 using System.Text;
+using FallowEarth.Infrastructure;
+using FallowEarth.ResourcesSystem;
 using UnityEngine;
 
 namespace FallowEarth.Balance
@@ -55,9 +57,9 @@ namespace FallowEarth.Balance
             }
 
             DrawHeader("Ресурсы");
-            if (ResourceManager.Instance != null)
+            if (GameServices.TryResolve(out IResourceManager resourceManager))
             {
-                var snapshot = ResourceManager.Instance.GetSnapshot();
+                var snapshot = resourceManager.GetSnapshot();
                 foreach (var entry in snapshot.Entries)
                 {
                     GUILayout.Label($"- {entry.Definition.DisplayName} ({entry.Quality}): {entry.Amount}");
