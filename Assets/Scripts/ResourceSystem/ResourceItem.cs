@@ -1,3 +1,4 @@
+using FallowEarth.Infrastructure;
 using FallowEarth.ResourcesSystem;
 using UnityEngine;
 
@@ -32,12 +33,14 @@ public class ResourceItem : MonoBehaviour
 
     void OnEnable()
     {
-        ResourceLogisticsManager.RegisterItem(this);
+        if (GameServices.TryResolve<IResourceLogisticsService>(out var logistics))
+            logistics.RegisterItem(this);
     }
 
     void OnDisable()
     {
-        ResourceLogisticsManager.UnregisterItem(this);
+        if (GameServices.TryResolve<IResourceLogisticsService>(out var logistics))
+            logistics.UnregisterItem(this);
     }
 
     void CreateFloatingText()

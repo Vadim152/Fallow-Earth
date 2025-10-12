@@ -1,4 +1,5 @@
 using System.Text;
+using FallowEarth.Infrastructure;
 using FallowEarth.ResourcesSystem;
 using UnityEngine;
 using UnityEngine.UI;
@@ -6,6 +7,7 @@ using UnityEngine.UI;
 public class ResourceLedgerUI : MonoBehaviour
 {
     private Text text;
+    private IResourceManager resourceManager;
 
     void Start()
     {
@@ -32,21 +34,24 @@ public class ResourceLedgerUI : MonoBehaviour
         text.alignment = TextAnchor.UpperRight;
         text.color = Color.black;
 
-        if (ResourceManager.Instance != null)
-            ResourceManager.Instance.LedgerChanged += OnLedgerChanged;
+        if (GameServices.TryResolve(out resourceManager))
+        {
+            resourceManager.LedgerChanged += OnLedgerChanged;
+            UpdateText(resourceManager.GetSnapshot());
+        }
     }
 
     void OnDestroy()
     {
-        if (ResourceManager.Instance != null)
-            ResourceManager.Instance.LedgerChanged -= OnLedgerChanged;
+        if (resourceManager != null)
+            resourceManager.LedgerChanged -= OnLedgerChanged;
     }
 
     void Update()
     {
-        if (text == null || ResourceManager.Instance == null)
+        if (text == null || resourceManager == null)
             return;
-        UpdateText(ResourceManager.Instance.GetSnapshot());
+        UpdateText(resourceManager.GetSnapshot());
     }
 
     void OnLedgerChanged(ResourceManager.ResourceLedgerSnapshot snapshot)

@@ -8,23 +8,14 @@ using UnityEngine;
 /// <summary>
 /// Global resource tracker capable of handling multiple resource types, qualities and mass.
 /// </summary>
-public class ResourceManager : MonoBehaviour
+public class ResourceManager : MonoBehaviour, IResourceManager
 {
-    public static ResourceManager Instance { get; private set; }
-
     private readonly Dictionary<ResourceKey, ResourceLedgerEntry> ledger = new Dictionary<ResourceKey, ResourceLedgerEntry>();
 
     public event Action<ResourceLedgerSnapshot> LedgerChanged;
 
     void Awake()
     {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
         ResourceRegistry.EnsureInitialized();
         BroadcastLedger();
     }
@@ -32,9 +23,9 @@ public class ResourceManager : MonoBehaviour
     /// <summary>
     /// Adds resources to the global stockpile.
     /// </summary>
-    public static void Add(ResourceStack stack)
+    public void Add(ResourceStack stack)
     {
-        if (Instance == null || stack.IsEmpty)
+        if (stack.IsEmpty)
             return;
 
         var adjustedStack = stack;
@@ -45,38 +36,36 @@ public class ResourceManager : MonoBehaviour
         }
 
         var key = new ResourceKey(adjustedStack.Definition.Id, adjustedStack.Quality);
-        if (!Instance.ledger.TryGetValue(key, out var entry))
+        if (!ledger.TryGetValue(key, out var entry))
         {
             entry = new ResourceLedgerEntry(adjustedStack.Definition, adjustedStack.Quality, 0);
         }
         entry = entry.WithAmount(entry.Amount + adjustedStack.Amount);
-        Instance.ledger[key] = entry;
-        Instance.BroadcastLedger();
+        ledger[key] = entry;
+        BroadcastLedger();
     }
 
     /// <summary>
     /// Attempts to consume the requested resources, prioritising higher qualities.
     /// </summary>
-    public static bool TryConsume(IEnumerable<ResourceRequest> requests)
+    public bool TryConsume(IEnumerable<ResourceRequest> requests)
     {
-        if (Instance == null)
-            return false;
         if (requests == null)
             return true;
 
-        var tempLedger = Instance.ledger.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        var tempLedger = ledger.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
         foreach (var request in requests)
         {
-            if (!Instance.TryConsumeInternal(tempLedger, request))
+            if (!TryConsumeInternal(tempLedger, request))
                 return false;
         }
 
-        Instance.ledger.Clear();
+        ledger.Clear();
         foreach (var kvp in tempLedger)
-            Instance.ledger[kvp.Key] = kvp.Value;
+            ledger[kvp.Key] = kvp.Value;
 
-        Instance.BroadcastLedger();
+        BroadcastLedger();
         return true;
     }
 
@@ -150,7 +139,7 @@ public class ResourceManager : MonoBehaviour
         LedgerChanged?.Invoke(GetSnapshot());
     }
 
-    public static void AddWood(int amount)
+    public void AddWood(int amount)
     {
         if (amount <= 0)
             return;
@@ -161,7 +150,7 @@ public class ResourceManager : MonoBehaviour
         }
     }
 
-    public static bool UseWood(int amount)
+    public bool UseWood(int amount)
     {
         if (amount <= 0)
             return true;

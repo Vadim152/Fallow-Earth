@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using FallowEarth.Infrastructure;
+using FallowEarth.ResourcesSystem;
 using UnityEngine;
 
 namespace FallowEarth.Research
@@ -76,7 +78,8 @@ namespace FallowEarth.Research
             if (unlocked.Contains(tech.Id))
                 return;
 
-            if (!ResourceManager.TryConsume(tech.UnlockCosts))
+            if (!GameServices.TryResolve(out IResourceManager resourceManager) ||
+                !resourceManager.TryConsume(tech.UnlockCosts))
                 return;
 
             unlocked.Add(tech.Id);
