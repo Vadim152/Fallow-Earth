@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using FallowEarth.Navigation;
 using FallowEarth.ResourcesSystem;
 using FallowEarth.Saving;
+using FallowEarth.Balance;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
@@ -651,13 +652,26 @@ public class Colonist : SaveableMonoBehaviour
     void Update()
     {
         UpdateNeeds();
-        if (!mentalBreak && (mood < 0.2f || stress > 0.95f))
+        if (!mentalBreak)
         {
-            mentalBreak = true;
-            breakTimer = breakDuration;
-            CancelTasks();
-            StartWander();
-            activity = "Panicking";
+            bool triggerBreak = false;
+            string reason = string.Empty;
+            var balance = GameBalanceManager.Instance;
+            if (balance != null && balance.ShouldEnterMentalBreak(mood, stress, Time.deltaTime))
+            {
+                triggerBreak = true;
+                reason = $"баланс: настроение {mood:0.00}, стресс {stress:0.00}";
+            }
+            else if (mood < 0.2f || stress > 0.95f)
+            {
+                triggerBreak = true;
+                reason = $"критические показатели: настроение {mood:0.00}, стресс {stress:0.00}";
+            }
+
+            if (triggerBreak)
+            {
+                BeginMentalBreak(reason);
+            }
         }
 
         if (mentalBreak)
@@ -670,6 +684,7 @@ public class Colonist : SaveableMonoBehaviour
             {
                 mentalBreak = false;
                 CancelTasks();
+                EventConsole.Log("Mental", $"{name} восстанавливает контроль над собой.");
             }
             MoveAlongPath();
             return;
@@ -1226,6 +1241,19 @@ public class Colonist : SaveableMonoBehaviour
         var task = new RestOnGroundTask(target, Mathf.Max(2f, duration),
             Mathf.Max(0f, fatigueRecovery), Mathf.Max(0f, stressRelief));
         return TryAssignTask(task);
+    }
+
+    void BeginMentalBreak(string reason)
+    {
+        if (mentalBreak)
+            return;
+        mentalBreak = true;
+        breakTimer = breakDuration;
+        CancelTasks();
+        StartWander();
+        activity = "Panicking";
+        needs?.AddStress(NeedType.Stress, 0.2f);
+        EventConsole.Log("Mental", string.IsNullOrEmpty(reason) ? $"{name} впадает в паническое состояние." : $"{name} впадает в паническое состояние ({reason}).");
     }
 
     void StartWander()

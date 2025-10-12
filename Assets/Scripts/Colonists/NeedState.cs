@@ -1,4 +1,5 @@
 using UnityEngine;
+using FallowEarth.Balance;
 
 public class NeedState
 {
@@ -17,6 +18,12 @@ public class NeedState
     {
         float perSecond = Definition.IncreasePerHour / 3600f;
         float naturalRecovery = Definition.NaturalRecoveryPerHour / 3600f;
+        float hour = DayNightCycle.Instance != null ? DayNightCycle.Instance.CurrentHour : 12f;
+        if (GameBalanceManager.Instance != null)
+        {
+            perSecond *= GameBalanceManager.Instance.EvaluateNeedPressure(Definition.Type, hour);
+            naturalRecovery *= GameBalanceManager.Instance.EvaluateNeedRecovery(Definition.Type, hour);
+        }
         float change = (perSecond * traitMultiplier - naturalRecovery) * deltaTime;
         ApplyDelta(change + pendingDelta);
         pendingDelta = 0f;

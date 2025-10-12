@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using FallowEarth.Balance;
 using FallowEarth.ResourcesSystem;
 using UnityEngine;
 
@@ -36,12 +37,19 @@ public class ResourceManager : MonoBehaviour
         if (Instance == null || stack.IsEmpty)
             return;
 
-        var key = new ResourceKey(stack.Definition.Id, stack.Quality);
+        var adjustedStack = stack;
+        if (GameBalanceManager.Instance != null)
+        {
+            int adjustedAmount = GameBalanceManager.Instance.ApplyProductionMultiplier(stack.Amount);
+            adjustedStack = stack.WithAmount(adjustedAmount);
+        }
+
+        var key = new ResourceKey(adjustedStack.Definition.Id, adjustedStack.Quality);
         if (!Instance.ledger.TryGetValue(key, out var entry))
         {
-            entry = new ResourceLedgerEntry(stack.Definition, stack.Quality, 0);
+            entry = new ResourceLedgerEntry(adjustedStack.Definition, adjustedStack.Quality, 0);
         }
-        entry = entry.WithAmount(entry.Amount + stack.Amount);
+        entry = entry.WithAmount(entry.Amount + adjustedStack.Amount);
         Instance.ledger[key] = entry;
         Instance.BroadcastLedger();
     }
@@ -75,6 +83,8 @@ public class ResourceManager : MonoBehaviour
     bool TryConsumeInternal(Dictionary<ResourceKey, ResourceLedgerEntry> tempLedger, ResourceRequest request)
     {
         int remaining = request.Amount;
+        if (GameBalanceManager.Instance != null)
+            remaining = GameBalanceManager.Instance.ApplyConsumptionMultiplier(request.Amount);
         var matching = tempLedger
             .Where(kvp => kvp.Key.ResourceId == request.Definition.Id && kvp.Value.Quality >= request.MinimumQuality)
             .OrderByDescending(kvp => kvp.Value.Quality)

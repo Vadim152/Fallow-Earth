@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using FallowEarth.Balance;
 
 /// <summary>
 /// Simple weather system that randomly toggles rain.
@@ -23,6 +24,12 @@ public class WeatherSystem : MonoBehaviour
     private float timer;
     private Image overlay;
 
+    private float baseMinClearTime;
+    private float baseMaxClearTime;
+    private float baseMinRainTime;
+    private float baseMaxRainTime;
+    private float baseRainMoveSpeedMultiplier;
+
     public bool IsRaining => raining;
 
     void Awake()
@@ -34,6 +41,11 @@ public class WeatherSystem : MonoBehaviour
         }
         Instance = this;
         DontDestroyOnLoad(gameObject);
+        baseMinClearTime = minClearTime;
+        baseMaxClearTime = maxClearTime;
+        baseMinRainTime = minRainTime;
+        baseMaxRainTime = maxRainTime;
+        baseRainMoveSpeedMultiplier = rainMoveSpeedMultiplier;
     }
 
     void Start()
@@ -88,11 +100,22 @@ public class WeatherSystem : MonoBehaviour
     void BeginRain()
     {
         raining = true;
-        timer = Random.Range(minRainTime, maxRainTime);
+        float min = minRainTime;
+        float max = maxRainTime;
+        float severity = 1f;
+        if (GameBalanceManager.Instance != null)
+        {
+            var range = GameBalanceManager.Instance.RainWeatherDuration;
+            min = baseMinRainTime * range.Min;
+            max = baseMaxRainTime * range.Max;
+            severity = GameBalanceManager.Instance.WeatherSeverityMultiplier;
+        }
+        timer = Random.Range(min, max);
+        rainMoveSpeedMultiplier = Mathf.Clamp(baseRainMoveSpeedMultiplier * Mathf.Lerp(1f, 0.5f, Mathf.Clamp01(severity - 1f)), 0.25f, 1f);
         if (overlay != null)
         {
             Color c = overlay.color;
-            c.a = 0.25f;
+            c.a = Mathf.Clamp01(0.2f * severity);
             overlay.color = c;
         }
     }
@@ -100,7 +123,16 @@ public class WeatherSystem : MonoBehaviour
     void BeginClear()
     {
         raining = false;
-        timer = Random.Range(minClearTime, maxClearTime);
+        float min = minClearTime;
+        float max = maxClearTime;
+        if (GameBalanceManager.Instance != null)
+        {
+            var range = GameBalanceManager.Instance.ClearWeatherDuration;
+            min = baseMinClearTime * range.Min;
+            max = baseMaxClearTime * range.Max;
+        }
+        timer = Random.Range(min, max);
+        rainMoveSpeedMultiplier = baseRainMoveSpeedMultiplier;
         if (overlay != null)
         {
             Color c = overlay.color;
