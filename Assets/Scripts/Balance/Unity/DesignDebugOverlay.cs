@@ -20,10 +20,8 @@ namespace FallowEarth.Balance
         void Awake()
         {
             DontDestroyOnLoad(gameObject);
-#if !UNITY_EDITOR
-            if (!visibleInReleaseBuild)
+            if (!Application.isEditor && !visibleInReleaseBuild)
                 visible = false;
-#endif
         }
 
         void Update()
