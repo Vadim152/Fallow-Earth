@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using FallowEarth.MapGeneration;
 using FallowEarth.Navigation;
@@ -633,11 +634,90 @@ public class MapGenerator : MonoBehaviour
     private void CenterCamera()
     {
         Camera cam = Camera.main;
-        if (cam != null)
+        if (cam == null)
+            return;
+
+        cam.orthographic = true;
+
+        if (TryFocusCameraOnColonists(cam))
+            return;
+
+        cam.transform.position = new Vector3(width / 2f, height / 2f, -10f);
+        cam.orthographicSize = CalculateDefaultCameraSize(cam);
+
+        StartCoroutine(FocusCameraOnColonistsWhenReady(cam));
+    }
+
+    private float CalculateDefaultCameraSize(Camera cam)
+    {
+        float longestSide = Mathf.Max(width, height);
+        float desired = Mathf.Max(longestSide * 0.25f, 8f);
+
+        CameraPanZoomController zoomController = cam.GetComponent<CameraPanZoomController>();
+        if (zoomController != null)
+            return Mathf.Clamp(desired, zoomController.minSize, zoomController.maxSize);
+
+        return Mathf.Clamp(desired, 1f, longestSide);
+    }
+
+    private bool TryFocusCameraOnColonists(Camera cam)
+    {
+        Colonist[] colonists = FindObjectsOfType<Colonist>();
+        if (colonists == null || colonists.Length == 0)
+            return false;
+
+        bool foundValid = false;
+        Vector2 min = new Vector2(float.MaxValue, float.MaxValue);
+        Vector2 max = new Vector2(float.MinValue, float.MinValue);
+
+        foreach (Colonist colonist in colonists)
         {
-            cam.orthographic = true;
-            cam.transform.position = new Vector3(width / 2f, height / 2f, -10f);
-            cam.orthographicSize = Mathf.Max(width, height) / 2f;
+            if (colonist == null)
+                continue;
+
+            Vector3 pos = colonist.transform.position;
+            min = Vector2.Min(min, new Vector2(pos.x, pos.y));
+            max = Vector2.Max(max, new Vector2(pos.x, pos.y));
+            foundValid = true;
+        }
+
+        if (!foundValid)
+            return false;
+
+        Vector2 center = (min + max) * 0.5f;
+        Vector3 camPos = cam.transform.position;
+        camPos.x = center.x;
+        camPos.y = center.y;
+        cam.transform.position = camPos;
+
+        float halfWidth = Mathf.Max((max.x - min.x) * 0.5f, 0f);
+        float halfHeight = Mathf.Max((max.y - min.y) * 0.5f, 0f);
+        float margin = 3f;
+
+        float desiredSize = Mathf.Max(halfHeight + margin, (halfWidth + margin) / Mathf.Max(cam.aspect, 0.01f));
+
+        CameraPanZoomController zoomController = cam.GetComponent<CameraPanZoomController>();
+        if (zoomController != null)
+            desiredSize = Mathf.Clamp(desiredSize, zoomController.minSize, zoomController.maxSize);
+        else
+            desiredSize = Mathf.Clamp(desiredSize, 1f, Mathf.Max(width, height));
+
+        cam.orthographicSize = desiredSize;
+        return true;
+    }
+
+    private IEnumerator FocusCameraOnColonistsWhenReady(Camera cam)
+    {
+        const int attempts = 10;
+        for (int i = 0; i < attempts; i++)
+        {
+            yield return null;
+
+            if (cam == null)
+                yield break;
+
+            if (TryFocusCameraOnColonists(cam))
+                yield break;
         }
     }
 
