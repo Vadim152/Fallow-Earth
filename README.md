@@ -82,3 +82,20 @@ If no bed is available, colonists can now take a short break and rest on the gro
 ## Weather
 
 A new `WeatherSystem` randomly brings rain. When it rains the screen darkens slightly and colonists move slower. The current weather switches between clear and rainy after random intervals.
+
+
+## Balance Profiles and Storyteller
+
+The new `GameBalanceManager` exposes RimWorld-inspired presets (Settler, Survivalist, Hardcore) that tune resource yields, event cadence and mental break thresholds. Attach the component once per scene or use the provided bootstrapper to keep it alive between loads. Difficulty can be changed at runtime and will immediately notify systems such as the storyteller and weather. Detailed designer notes live in `Docs/DesignerBalanceGuide.md`.
+
+### Storyteller Director
+`StorytellerDirector` schedules colony incidents using the active balance profile. Events are pushed into the existing event log and the new event console, making it easy to replay the colony narrative during balancing sessions.
+
+## Designer Debug Tools
+
+* `DesignDebugOverlay` (F1) shows live resource totals, weather state and the most recent events.
+* `EventConsole` stores the latest 200 balance-related messages and exposes the `EntryAdded` event for custom dashboards.
+
+## Automated Balance Tests
+
+Run `dotnet test Tests/Balance.Tests/Balance.Tests.csproj` to execute fast unit tests that verify the balance curves and storyteller pacing without requiring Unity.

@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using FallowEarth.Balance;
 
 /// <summary>
 /// Simple day/night cycle that darkens the screen at night.
@@ -66,7 +67,10 @@ public class DayNightCycle : MonoBehaviour
     void Update()
     {
         // Fraction of the current day (0..1) where 0 is midnight
-        float t = (Time.time / (minutesPerDay * 60f)) % 1f;
+        float secondsPerDay = minutesPerDay * 60f;
+        if (GameBalanceManager.Instance != null)
+            secondsPerDay = Mathf.Max(1f, secondsPerDay / GameBalanceManager.Instance.DayLengthMultiplier);
+        float t = (Time.time / secondsPerDay) % 1f;
         CurrentHour = t * 24f;
         // Shift the cosine so that t=0 corresponds to midnight rather than noon
         float phase = Mathf.Cos((t - 0.5f) * Mathf.PI * 2f) * 0.5f + 0.5f; // 1 at noon, 0 at midnight
