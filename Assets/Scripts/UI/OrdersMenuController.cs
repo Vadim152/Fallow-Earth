@@ -1,102 +1,74 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class OrdersMenuController : MonoBehaviour
 {
-    private Canvas canvas;
-    private GameObject menuPanel;
-    private bool menuOpen;
-    private Coroutine animRoutine;
     private Image toggleButtonImage;
     private RectTransform toggleButtonRect;
-    public Color activeColor = new Color(0.6f, 0.9f, 1f, 1f);
-    public Color normalColor = new Color(0.9f, 0.9f, 0.9f, 1f);
+    private ManagementTabController tabs;
+    private GameObject ordersSection;
 
     void Start()
     {
-        SetupCanvas();
-        CreateMenu();
+        tabs = ManagementTabController.FindOrCreate();
+        BuildWorkTab();
     }
 
-    void SetupCanvas()
+    void BuildWorkTab()
     {
-        canvas = FindObjectOfType<Canvas>();
-        if (canvas == null)
-        {
-            GameObject c = new GameObject("Canvas");
-            canvas = c.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            CanvasScaler scaler = c.AddComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1080, 1920);
-            c.AddComponent<GraphicRaycaster>();
-        }
-    }
-
-    void CreateMenu()
-    {
-        menuPanel = new GameObject("OrdersMenu");
-        menuPanel.transform.SetParent(canvas.transform, false);
-        Image img = menuPanel.AddComponent<Image>();
-        img.color = new Color(1f, 1f, 1f, 0.95f);
-        RectTransform rt = menuPanel.GetComponent<RectTransform>();
-        rt.anchorMin = new Vector2(0.5f, 0.5f);
-        rt.anchorMax = new Vector2(0.5f, 0.5f);
-        rt.pivot = new Vector2(0.5f, 0.5f);
-        rt.anchoredPosition = Vector2.zero;
-        rt.sizeDelta = new Vector2(300f, 100f);
-        menuPanel.transform.localScale = Vector3.zero;
-        menuPanel.SetActive(false);
-
-        VerticalLayoutGroup layout = menuPanel.AddComponent<VerticalLayoutGroup>();
-        layout.spacing = 5f;
-        layout.padding = new RectOffset(5, 5, 5, 5);
-
+        ordersSection = tabs.CreateSection(ManagementTabController.WorkTabId, "\u041f\u0440\u0438\u043a\u0430\u0437\u044b");
+        tabs.CreateLabel(ordersSection.transform, "\u041f\u043b\u0430\u043d\u0438\u0440\u0443\u0439\u0442\u0435 \u0440\u0430\u0431\u043e\u0442\u044b \u043d\u0430 \u0442\u0435\u0440\u0440\u0438\u0442\u043e\u0440\u0438\u0438", TextAnchor.MiddleLeft, 16);
         CreateChopButton();
+        CreateHarvestButton();
+        CreateCancelButton();
     }
 
     void CreateChopButton()
     {
         TreeChopController ctrl = FindObjectOfType<TreeChopController>();
-        GameObject obj = new GameObject("ChopTreesButton");
-        obj.transform.SetParent(menuPanel.transform, false);
-        Image img = obj.AddComponent<Image>();
-        img.color = new Color(0.9f, 0.9f, 0.9f, 1f);
-        Button btn = obj.AddComponent<Button>();
-        btn.targetGraphic = img;
-        obj.AddComponent<ButtonPressEffect>();
-        btn.onClick.AddListener(() =>
+        tabs.CreateActionButton(ordersSection, "\u0421\u0440\u0443\u0431\u0438\u0442\u044c \u0434\u0435\u0440\u0435\u0432\u044c\u044f", () =>
         {
             if (ctrl != null)
             {
                 ctrl.ToggleSelecting();
-                    if (ctrl.IsSelecting)
+                if (ctrl.IsSelecting)
                     global::CancelActionUI.Show(toggleButtonRect, ctrl.ToggleSelecting);
-                    else
-                        global::CancelActionUI.Hide();
+                else
+                    global::CancelActionUI.Hide();
             }
             ToggleMenu();
         });
 
-        GameObject textObj = new GameObject("Text");
-        textObj.transform.SetParent(obj.transform, false);
-        Text txt = textObj.AddComponent<Text>();
-        txt.text = "\u0421\u0440\u0443\u0431\u0438\u0442\u044C"; // "Срубить"
-        txt.alignment = TextAnchor.MiddleCenter;
-        txt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        txt.color = Color.black;
-        RectTransform trt = textObj.GetComponent<RectTransform>();
-        trt.anchorMin = Vector2.zero;
-        trt.anchorMax = Vector2.one;
-        trt.offsetMin = Vector2.zero;
-        trt.offsetMax = Vector2.zero;
-
-        RectTransform brt = obj.GetComponent<RectTransform>();
-        brt.sizeDelta = new Vector2(160f, 30f);
-
         if (ctrl != null)
-            ctrl.AssignButton(img, brt);
+        {
+            Transform button = ordersSection.transform.Find("\u0421\u0440\u0443\u0431\u0438\u0442\u044c \u0434\u0435\u0440\u0435\u0432\u044c\u044fActionButton");
+            if (button != null)
+            {
+                Image img = button.GetComponent<Image>();
+                RectTransform rect = button.GetComponent<RectTransform>();
+                if (img != null && rect != null)
+                    ctrl.AssignButton(img, rect);
+            }
+        }
+    }
+
+    void CreateHarvestButton()
+    {
+        tabs.CreateActionButton(ordersSection, "\u0421\u0431\u043e\u0440 \u044f\u0433\u043e\u0434", () =>
+        {
+            MapGenerator map = FindObjectOfType<MapGenerator>();
+            if (map != null)
+                EventLogUI.AddEntry("\u041a\u043e\u043b\u043e\u043d\u0438\u0441\u0442\u044b \u043e\u0442\u043c\u0435\u0447\u0430\u044e\u0442 \u043a\u0443\u0441\u0442\u044b \u0441 \u043f\u043b\u043e\u0434\u0430\u043c\u0438 \u0434\u043b\u044f \u0441\u0431\u043e\u0440\u0430.");
+        });
+    }
+
+    void CreateCancelButton()
+    {
+        tabs.CreateActionButton(ordersSection, "\u041e\u0442\u043c\u0435\u043d\u0438\u0442\u044c \u0432\u0441\u0451", () =>
+        {
+            CancelActionUI.Hide();
+            EventLogUI.AddEntry("\u0412\u0441\u0435 \u0440\u0430\u0431\u043e\u0447\u0438\u0435 \u043f\u043e\u0440\u0443\u0447\u0435\u043d\u0438\u044f \u0431\u044b\u043b\u0438 \u0441\u043d\u044f\u0442\u044b.");
+        });
     }
 
     public void AssignToggleButton(Image img, RectTransform rect)
@@ -104,39 +76,15 @@ public class OrdersMenuController : MonoBehaviour
         toggleButtonImage = img;
         toggleButtonRect = rect;
         if (toggleButtonImage != null)
-            toggleButtonImage.color = normalColor;
+            tabs?.NotifyToggleRegistered(toggleButtonImage);
     }
 
     public RectTransform ToggleButtonRect => toggleButtonRect;
 
     public void ToggleMenu()
     {
-        menuOpen = !menuOpen;
-        if (toggleButtonImage != null)
-            toggleButtonImage.color = menuOpen ? activeColor : normalColor;
-        if (animRoutine != null)
-            StopCoroutine(animRoutine);
-        animRoutine = StartCoroutine(MenuAnimation(menuOpen));
-    }
-
-    IEnumerator MenuAnimation(bool open)
-    {
-        if (menuPanel == null)
-            yield break;
-        if (open)
-            menuPanel.SetActive(true);
-
-        Vector3 start = menuPanel.transform.localScale;
-        Vector3 target = open ? Vector3.one : Vector3.zero;
-        float time = 0f;
-        while (time < 0.2f)
-        {
-            time += Time.unscaledDeltaTime;
-            menuPanel.transform.localScale = Vector3.Lerp(start, target, time / 0.2f);
-            yield return null;
-        }
-        menuPanel.transform.localScale = target;
-        if (!open)
-            menuPanel.SetActive(false);
+        if (tabs == null)
+            return;
+        tabs.ToggleMenu(this, ManagementTabController.WorkTabId, toggleButtonImage);
     }
 }

@@ -1,142 +1,59 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.EventSystems;
-
-// Required for stockpile zone placement
-using System.Collections.Generic;
 
 public class ZoneMenuController : MonoBehaviour
 {
-    private Canvas canvas;
-    private GameObject menuPanel;
-    private bool menuOpen;
-    private Coroutine animRoutine;
     private Image toggleButtonImage;
     private RectTransform toggleButtonRect;
-    public Color activeColor = new Color(0.6f, 0.9f, 1f, 1f);
-    public Color normalColor = new Color(0.9f, 0.9f, 0.9f, 1f);
+    private ManagementTabController tabs;
+    private GameObject zoneSection;
 
     void Start()
     {
-        SetupCanvas();
-        CreateZoneMenu();
+        tabs = ManagementTabController.FindOrCreate();
+        BuildZoneTab();
     }
 
-    void SetupCanvas()
+    void BuildZoneTab()
     {
-        canvas = FindObjectOfType<Canvas>();
-        if (canvas == null)
+        zoneSection = tabs.CreateSection(ManagementTabController.HealthTabId, "\u0417\u043e\u043d\u044b");
+        tabs.CreateLabel(zoneSection.transform, "\u041e\u0440\u0433\u0430\u043d\u0438\u0437\u0443\u0439\u0442\u0435 \u0441\u043a\u043b\u0430\u0434\u044b \u0438 \u0436\u0438\u043b\u044b\u0435 \u043f\u043e\u043c\u0435\u0449\u0435\u043d\u0438\u044f", TextAnchor.MiddleLeft, 16);
+
+        GameObject grid = new GameObject("ZoneButtonGrid");
+        grid.transform.SetParent(zoneSection.transform, false);
+        GridLayoutGroup layout = grid.AddComponent<GridLayoutGroup>();
+        layout.cellSize = new Vector2(160f, 46f);
+        layout.spacing = new Vector2(6f, 6f);
+
+        CreateStockpileButton(grid);
+        CreateFutureZonePlaceholder(grid, "\u0413\u0438\u0434\u0440\u043e\u043f\u043e\u043d\u0438\u043a\u0430");
+        CreateFutureZonePlaceholder(grid, "\u041c\u0435\u0434\u043f\u0443\u043d\u043a\u0442");
+        CreateFutureZonePlaceholder(grid, "\u041e\u0442\u0434\u044b\u0445");
+    }
+
+    void CreateStockpileButton(GameObject parent)
+    {
+        tabs.CreateActionButton(parent, "\u0421\u043a\u043b\u0430\u0434", () =>
         {
-            GameObject c = new GameObject("Canvas");
-            canvas = c.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            CanvasScaler scaler = c.AddComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1080, 1920);
-            c.AddComponent<GraphicRaycaster>();
-        }
-
-        // EventSystem is now created by EventSystemBootstrap
-    }
-
-    void CreateZoneButton()
-    {
-        GameObject buttonObj = new GameObject("ZoneButton");
-        buttonObj.transform.SetParent(canvas.transform, false);
-        Image img = buttonObj.AddComponent<Image>();
-        img.color = normalColor;
-        Button btn = buttonObj.AddComponent<Button>();
-        btn.targetGraphic = img;
-        buttonObj.AddComponent<ButtonPressEffect>();
-        btn.onClick.AddListener(ToggleMenu);
-
-        RectTransform rt = buttonObj.GetComponent<RectTransform>();
-        AssignToggleButton(img, rt);
-        rt.anchorMin = new Vector2(0f, 0f);
-        rt.anchorMax = new Vector2(0f, 0f);
-        rt.pivot = new Vector2(0f, 0f);
-        // Place the zones button above the existing build and chop buttons
-        // to avoid overlapping with the "Chop" button at (20,20) and the
-        // build button at (20,60).
-        rt.anchoredPosition = new Vector2(20f, 100f);
-        rt.sizeDelta = new Vector2(160f, 30f);
-
-        GameObject textObj = new GameObject("Text");
-        textObj.transform.SetParent(buttonObj.transform, false);
-        Text txt = textObj.AddComponent<Text>();
-        txt.text = "\u0417\u043e\u043d\u044b"; // "Зоны"
-        txt.alignment = TextAnchor.MiddleCenter;
-        txt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        txt.color = Color.black;
-        RectTransform trt = textObj.GetComponent<RectTransform>();
-        trt.anchorMin = Vector2.zero;
-        trt.anchorMax = Vector2.one;
-        trt.offsetMin = Vector2.zero;
-        trt.offsetMax = Vector2.zero;
-    }
-
-    void CreateZoneMenu()
-    {
-        menuPanel = new GameObject("ZoneMenu");
-        menuPanel.transform.SetParent(canvas.transform, false);
-        Image img = menuPanel.AddComponent<Image>();
-        img.color = new Color(1f, 1f, 1f, 0.95f);
-        RectTransform rt = menuPanel.GetComponent<RectTransform>();
-        rt.anchorMin = new Vector2(0.5f, 0.5f);
-        rt.anchorMax = new Vector2(0.5f, 0.5f);
-        rt.pivot = new Vector2(0.5f, 0.5f);
-        rt.anchoredPosition = Vector2.zero;
-        rt.sizeDelta = new Vector2(300f, 400f);
-        menuPanel.transform.localScale = Vector3.zero;
-        menuPanel.SetActive(false);
-
-        GridLayoutGroup grid = menuPanel.AddComponent<GridLayoutGroup>();
-        grid.cellSize = new Vector2(120f, 50f);
-        grid.spacing = new Vector2(5f, 5f);
-        grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-        grid.constraintCount = 2;
-        grid.padding = new RectOffset(5, 5, 5, 5);
-
-        string[] zones = { "\u0421\u043a\u043b\u0430\u0434", "Zone2", "Zone3", "Zone4", "Zone5", "Zone6", "Zone7", "Zone8" };
-        for (int i = 0; i < zones.Length; i++)
-        {
-            GameObject bObj = new GameObject($"Zone{i + 1}");
-            bObj.transform.SetParent(menuPanel.transform, false);
-            Image bImg = bObj.AddComponent<Image>();
-            bImg.color = new Color(0.9f, 0.9f, 0.9f, 1f);
-            Button bBtn = bObj.AddComponent<Button>();
-            bBtn.targetGraphic = bImg;
-            bObj.AddComponent<ButtonPressEffect>();
-            if (i == 0)
+            StockpileZoneController ctrl = FindObjectOfType<StockpileZoneController>();
+            if (ctrl != null)
             {
-                bBtn.onClick.AddListener(() => {
-                    StockpileZoneController ctrl = FindObjectOfType<StockpileZoneController>();
-                    if (ctrl != null)
-                    {
-                        ctrl.TogglePlacing();
-                        if (ctrl.IsPlacing)
-                            global::CancelActionUI.Show(toggleButtonRect, ctrl.TogglePlacing);
-                        else
-                            global::CancelActionUI.Hide();
-                    }
-                    ToggleMenu();
-                });
+                ctrl.TogglePlacing();
+                if (ctrl.IsPlacing)
+                    global::CancelActionUI.Show(toggleButtonRect, ctrl.TogglePlacing);
+                else
+                    global::CancelActionUI.Hide();
             }
+            ToggleMenu();
+        });
+    }
 
-            GameObject tObj = new GameObject("Text");
-            tObj.transform.SetParent(bObj.transform, false);
-            Text t = tObj.AddComponent<Text>();
-            t.text = zones[i];
-            t.alignment = TextAnchor.MiddleCenter;
-            t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            t.color = Color.black;
-            RectTransform tRt = tObj.GetComponent<RectTransform>();
-            tRt.anchorMin = Vector2.zero;
-            tRt.anchorMax = Vector2.one;
-            tRt.offsetMin = Vector2.zero;
-            tRt.offsetMax = Vector2.zero;
-        }
+    void CreateFutureZonePlaceholder(GameObject parent, string label)
+    {
+        tabs.CreateActionButton(parent, label, () =>
+        {
+            EventLogUI.AddEntry($"\u0417\u043e\u043d\u0430 \"{label}\" \u043f\u043e\u043a\u0430 \u043d\u0435 \u0433\u043e\u0442\u043e\u0432\u0430, \u043d\u043e \u043a\u043e\u043b\u043e\u043d\u0438\u0441\u0442\u044b \u043f\u043b\u0430\u043d\u0438\u0440\u0443\u044e\u0442 \u0435\u0451 \u0437\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0443.");
+        });
     }
 
     public void AssignToggleButton(Image img, RectTransform rect)
@@ -144,39 +61,15 @@ public class ZoneMenuController : MonoBehaviour
         toggleButtonImage = img;
         toggleButtonRect = rect;
         if (toggleButtonImage != null)
-            toggleButtonImage.color = normalColor;
+            tabs?.NotifyToggleRegistered(toggleButtonImage);
     }
 
     public RectTransform ToggleButtonRect => toggleButtonRect;
 
     public void ToggleMenu()
     {
-        menuOpen = !menuOpen;
-        if (toggleButtonImage != null)
-            toggleButtonImage.color = menuOpen ? activeColor : normalColor;
-        if (animRoutine != null)
-            StopCoroutine(animRoutine);
-        animRoutine = StartCoroutine(MenuAnimation(menuOpen));
-    }
-
-    IEnumerator MenuAnimation(bool open)
-    {
-        if (menuPanel == null)
-            yield break;
-        if (open)
-            menuPanel.SetActive(true);
-
-        Vector3 start = menuPanel.transform.localScale;
-        Vector3 target = open ? Vector3.one : Vector3.zero;
-        float time = 0f;
-        while (time < 0.2f)
-        {
-            time += Time.unscaledDeltaTime;
-            menuPanel.transform.localScale = Vector3.Lerp(start, target, time / 0.2f);
-            yield return null;
-        }
-        menuPanel.transform.localScale = target;
-        if (!open)
-            menuPanel.SetActive(false);
+        if (tabs == null)
+            return;
+        tabs.ToggleMenu(this, ManagementTabController.HealthTabId, toggleButtonImage);
     }
 }
