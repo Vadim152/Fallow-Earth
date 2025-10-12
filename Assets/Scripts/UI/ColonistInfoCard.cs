@@ -54,11 +54,11 @@ public class ColonistInfoCard : MonoBehaviour
         Image img = panel.AddComponent<Image>();
         img.color = new Color(1f, 1f, 1f, 0.95f);
         RectTransform rt = panel.GetComponent<RectTransform>();
-        rt.anchorMin = new Vector2(0.5f, 0f);
-        rt.anchorMax = new Vector2(0.5f, 0f);
-        rt.pivot = new Vector2(0.5f, 0f);
-        rt.anchoredPosition = new Vector2(0f, 20f);
-        rt.sizeDelta = new Vector2(300f, 170f);
+        rt.anchorMin = new Vector2(0f, 0f);
+        rt.anchorMax = new Vector2(0f, 0f);
+        rt.pivot = new Vector2(0f, 0f);
+        rt.anchoredPosition = new Vector2(20f, 20f);
+        rt.sizeDelta = new Vector2(320f, 170f);
 
         VerticalLayoutGroup layout = panel.AddComponent<VerticalLayoutGroup>();
         layout.padding = new RectOffset(5, 5, 5, 5);
