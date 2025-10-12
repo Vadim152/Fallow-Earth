@@ -34,9 +34,7 @@ public class ColonistAIModule : MonoBehaviour
 
     void Awake()
     {
-        owner = GetComponent<Colonist>();
-        needsModule = GetComponent<ColonistNeeds>();
-        socialModule = GetComponent<ColonistSocial>();
+        EnsureOwnerModules();
         taskManager = FindObjectOfType<TaskManager>();
         map = FindObjectOfType<MapGenerator>();
         pathfinding = PathfindingService.Instance;
@@ -65,6 +63,7 @@ public class ColonistAIModule : MonoBehaviour
 
     public void RefreshWorldReferences()
     {
+        EnsureOwnerModules();
         if (taskManager == null)
             taskManager = FindObjectOfType<TaskManager>();
         if (map == null)
@@ -226,7 +225,8 @@ public class ColonistAIModule : MonoBehaviour
 
     public void StartWander()
     {
-        if (map == null)
+        EnsureOwnerModules();
+        if (owner == null || map == null)
             return;
 
         Vector2Int start = Vector2Int.FloorToInt(owner.transform.position);
@@ -257,6 +257,7 @@ public class ColonistAIModule : MonoBehaviour
 
     public bool EvaluateNeeds()
     {
+        EnsureOwnerModules();
         var options = new List<NeedAction>();
         var needs = needsModule;
         if (needs == null)
@@ -379,6 +380,16 @@ public class ColonistAIModule : MonoBehaviour
     public void ReleaseCurrentTaskReservation()
     {
         ReleaseTaskReservation(currentTask);
+    }
+
+    private void EnsureOwnerModules()
+    {
+        if (owner == null)
+            owner = GetComponent<Colonist>();
+        if (needsModule == null)
+            needsModule = GetComponent<ColonistNeeds>();
+        if (socialModule == null)
+            socialModule = GetComponent<ColonistSocial>();
     }
 
     void AssignPathForCurrentTask()
