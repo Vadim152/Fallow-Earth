@@ -194,6 +194,7 @@ public class Colonist : SaveableMonoBehaviour
 
             if (path == null)
             {
+                ReleaseTaskReservation(task);
                 currentTask = null;
                 StartWander();
                 return;
@@ -203,6 +204,15 @@ public class Colonist : SaveableMonoBehaviour
             wandering = false;
             activity = "Moving";
         }
+    }
+
+    public bool TryAssignTask(Task task)
+    {
+        if (task == null)
+            return false;
+
+        SetTask(task);
+        return ReferenceEquals(currentTask, task);
     }
 
     public void CancelTasks()
@@ -219,15 +229,23 @@ public class Colonist : SaveableMonoBehaviour
 
     void ReleaseCurrentTaskReservation()
     {
-        if (currentTask is BuildWallTask buildTask)
+        ReleaseTaskReservation(currentTask);
+    }
+
+    void ReleaseTaskReservation(Task task)
+    {
+        if (task == null)
+            return;
+
+        if (task is BuildWallTask buildTask)
         {
             buildTask.ReleaseReservation();
         }
-        else if (currentTask is HaulLogTask haulTask)
+        else if (task is HaulLogTask haulTask)
         {
             haulTask.ReleaseReservation();
         }
-        else if (currentTask is RestTask restTask)
+        else if (task is RestTask restTask)
         {
             restTask.ReleaseReservation();
         }
@@ -266,6 +284,18 @@ public class Colonist : SaveableMonoBehaviour
         for (int i = 0; i < candidatePath.Count; i++)
         {
             Vector2Int cell = candidatePath[i];
+            bool isFinalStep = i == candidatePath.Count - 1;
+            bool walkable = service.IsWalkable(cell);
+            if (!walkable)
+            {
+                if (isFinalStep)
+                    continue;
+
+                foreach (var taken in acquired)
+                    service.ReleaseReservation(taken, this);
+                return false;
+            }
+
             if (!service.TryReserve(cell, this))
             {
                 foreach (var taken in acquired)
@@ -404,6 +434,19 @@ public class Colonist : SaveableMonoBehaviour
                         activity = "Eating";
                     else if (currentTask is SocializeTask)
                         activity = "Talking";
+                    else if (currentTask is RestOnGroundTask groundRest)
+                    {
+                        activity = "Resting";
+                        if (groundRest.duration > 0f)
+                        {
+                            float fatiguePerSecond = groundRest.fatigueRecoveryAmount / groundRest.duration;
+                            float stressPerSecond = groundRest.stressReliefAmount / groundRest.duration;
+                            if (fatiguePerSecond > 0f)
+                                fatigue = Mathf.Clamp01(fatigue - fatiguePerSecond * Time.deltaTime);
+                            if (stressPerSecond > 0f)
+                                stress = Mathf.Clamp01(stress - stressPerSecond * Time.deltaTime);
+                        }
+                    }
                     actionTimer -= Time.deltaTime;
                     if (actionTimer <= 0f)
                     {
@@ -733,55 +776,58 @@ public class Colonist : SaveableMonoBehaviour
     {
         var options = new List<NeedAction>();
 
-        if (hunger > 0.6f)
+        if (hunger > 0.5f)
         {
             options.Add(new NeedAction(hunger, () =>
             {
                 if (map != null && map.TryFindClosestBerryCell(transform.position, out var berry))
                 {
-                    SetTask(new EatBerryTask(berry, 2f, c =>
+                    var eatTask = new EatBerryTask(berry, 2.5f, c =>
                     {
                         map.RemoveBerries(berry.x, berry.y);
-                        c.hunger = Mathf.Clamp01(c.hunger - 0.5f);
-                    }));
-                    return true;
+                        c.hunger = Mathf.Clamp01(c.hunger - 0.6f);
+                        c.mood = Mathf.Clamp01(c.mood + 0.05f);
+                    });
+                    if (TryAssignTask(eatTask))
+                        return true;
                 }
                 return false;
             }));
         }
 
-        if (fatigue > 0.6f)
+        if (fatigue > 0.55f)
         {
             options.Add(new NeedAction(fatigue, () =>
             {
-                Bed bed = Bed.FindAvailable(transform.position);
-                if (bed != null)
-                {
-                    SetTask(new RestTask(bed, 5f));
+                float restDuration = Mathf.Lerp(5f, 9f, Mathf.Clamp01(fatigue));
+                if (TryBeginBedRest(restDuration))
                     return true;
-                }
-                return false;
+
+                float fatigueRecovery = Mathf.Lerp(0.25f, 0.45f, Mathf.Clamp01(fatigue));
+                float stressRelief = Mathf.Lerp(0.1f, 0.2f, Mathf.Clamp01(stress));
+                return BeginGroundRest(restDuration, fatigueRecovery, stressRelief);
             }));
         }
 
-        if (social < 0.4f)
+        if (social < 0.45f)
         {
             options.Add(new NeedAction(1f - social, () => TryStartSocialize()));
         }
 
-        if (stress > 0.8f)
+        if (stress > 0.75f)
         {
             options.Add(new NeedAction(stress, () =>
             {
                 if (TryStartSocialize())
                     return true;
-                Bed bed = Bed.FindAvailable(transform.position);
-                if (bed != null)
-                {
-                    SetTask(new RestTask(bed, 4f));
+
+                float calmDuration = Mathf.Lerp(4f, 7f, Mathf.Clamp01(stress));
+                if (TryBeginBedRest(Mathf.Max(4f, calmDuration - 1f)))
                     return true;
-                }
-                return false;
+
+                float fatigueRecovery = Mathf.Lerp(0.15f, 0.3f, Mathf.Clamp01(stress));
+                float stressRelief = Mathf.Lerp(0.2f, 0.35f, Mathf.Clamp01(stress));
+                return BeginGroundRest(calmDuration, fatigueRecovery, stressRelief);
             }));
         }
 
@@ -795,6 +841,24 @@ public class Colonist : SaveableMonoBehaviour
                 return true;
         }
         return false;
+    }
+
+    bool TryBeginBedRest(float restTime)
+    {
+        Bed bed = Bed.FindAvailable(transform.position);
+        if (bed == null)
+            return false;
+
+        return TryAssignTask(new RestTask(bed, Mathf.Max(1f, restTime)));
+    }
+
+    bool BeginGroundRest(float duration, float fatigueRecovery, float stressRelief)
+    {
+        Vector2Int cell = Vector2Int.FloorToInt(transform.position);
+        Vector2 target = new Vector2(cell.x + 0.5f, cell.y + 0.5f);
+        var task = new RestOnGroundTask(target, Mathf.Max(2f, duration),
+            Mathf.Max(0f, fatigueRecovery), Mathf.Max(0f, stressRelief));
+        return TryAssignTask(task);
     }
 
     void StartWander()
@@ -858,26 +922,32 @@ public class Colonist : SaveableMonoBehaviour
                     col.social = Mathf.Clamp01(col.social + 0.5f);
                     col.stress = Mathf.Clamp01(col.stress - 0.3f);
                 });
-            SetTask(taskA);
-            best.SetTask(taskB);
-            return true;
+            if (TryAssignTask(taskA))
+            {
+                if (best.TryAssignTask(taskB))
+                    return true;
+
+                CancelTasks();
+            }
         }
         return false;
     }
 
     void UpdateNeeds()
     {
-        float dt = Time.deltaTime / 60f;
-        hunger = Mathf.Clamp01(hunger + dt);
-        fatigue = Mathf.Clamp01(fatigue + dt * 0.5f);
-        social = Mathf.Clamp01(social - dt * 0.1f);
-        float stressChange = dt * 0.05f;
-        if (currentTask != null && !(currentTask is RestTask) && !(currentTask is SocializeTask))
-            stressChange += dt * 0.1f;
+        float dt = Time.deltaTime;
+        hunger = Mathf.Clamp01(hunger + dt / 180f);
+        fatigue = Mathf.Clamp01(fatigue + dt / 240f);
+        social = Mathf.Clamp01(social - dt / 360f);
+
+        float stressChange = dt / 320f;
+        if (currentTask != null && !(currentTask is RestTask) && !(currentTask is SocializeTask) && !(currentTask is RestOnGroundTask))
+            stressChange += dt / 200f;
         if (activity == "Resting" || activity == "Talking")
-            stressChange -= dt * 0.2f;
+            stressChange -= dt / 250f;
+
         stress = Mathf.Clamp01(stress + stressChange);
-        mood = Mathf.Clamp01(1f - (hunger + fatigue) * 0.5f - (1f - social) * 0.2f - stress * 0.3f);
+        mood = Mathf.Clamp01(1f - hunger * 0.45f - fatigue * 0.35f - (1f - social) * 0.15f - stress * 0.25f);
     }
 
     Sprite CreateColoredSprite(Color color)

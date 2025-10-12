@@ -166,7 +166,7 @@ public class ColonistInfoCard : MonoBehaviour
             {
                 Vector3 world = cam.ScreenToWorldPoint(Input.mousePosition);
                 world.z = 0f;
-                pendingManualMove.SetTask(new Task(world));
+                pendingManualMove.TryAssignTask(new Task(world));
             }
             awaitingManualMove = false;
             pendingManualMove = null;
@@ -241,7 +241,8 @@ public class ColonistInfoCard : MonoBehaviour
 
         current.CancelTasks();
         float restDuration = Mathf.Lerp(3f, 6f, Mathf.Clamp01(current.fatigue));
-        current.SetTask(new RestTask(bed, restDuration));
+        if (!current.TryAssignTask(new RestTask(bed, restDuration)))
+            Debug.LogWarning($"{current.name} could not reach the selected bed for rest.");
     }
 
     void HandleManualMove()

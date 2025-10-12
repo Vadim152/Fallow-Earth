@@ -33,6 +33,8 @@ Two colonists are created automatically when the scene starts. If no tasks are a
 
 A simple chopping tool is available via the `TreeChopController` script. When the game starts you can open the **Приказы** menu which contains a **Срубить** button. Toggle this and click or tap on any tree tile to designate it for chopping. When active, the button now animates by pressing inward so it's clear you can tap on trees. Free colonists will automatically receive tasks to move to the tree and remove it. Selected trees are tinted slightly brighter so you can easily see which ones you've marked.
 
+Colonists now reserve their paths only for genuinely walkable tiles, so they can reliably step onto the tree or berry they are interacting with without the reservation system blocking the final tile.
+
 
 Chopped trees now drop a `WoodLog` object at their position. Each log displays how much wood was gathered (between 30 and 50).
 
@@ -74,6 +76,8 @@ For simple drag panning without zooming, use the `CameraDragController` script. 
 Colonists gradually become hungry and tired over time. Hunger and fatigue both reduce movement speed and lower mood. These needs are visible on the colonist info card and update automatically each frame.
 
 Colonists will seek out a constructed bed when their fatigue grows high. Resting in a bed slowly decreases fatigue over several seconds. Beds are built from the construction menu and cost ten wood, just like walls and doors.
+
+If no bed is available, colonists can now take a short break and rest on the ground. Ground rest is less efficient than a real bed but prevents early exhaustion during the opening moments of a colony. Hunger, fatigue and stress progression has also been tuned to give you more time to respond before colonists spiral into mental breaks.
 
 ## Weather
 

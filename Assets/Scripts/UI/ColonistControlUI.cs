@@ -139,7 +139,7 @@ public class ColonistControlUI : MonoBehaviour
             {
                 Vector3 world = cam.ScreenToWorldPoint(Input.mousePosition);
                 world.z = 0f;
-                selected.SetTask(new Task(world));
+                selected.TryAssignTask(new Task(world));
             }
 
             CancelActionUI.Hide();
