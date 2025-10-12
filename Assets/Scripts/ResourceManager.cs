@@ -4,6 +4,7 @@ using System.Linq;
 using FallowEarth.Balance;
 using FallowEarth.ResourcesSystem;
 using UnityEngine;
+using ResourceRequest = FallowEarth.ResourcesSystem.ResourceRequest;
 
 /// <summary>
 /// Global resource tracker capable of handling multiple resource types, qualities and mass.

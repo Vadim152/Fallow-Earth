@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using FallowEarth.Infrastructure;
 using FallowEarth.ResourcesSystem;
 using UnityEngine;
+using ResourceRequest = FallowEarth.ResourcesSystem.ResourceRequest;
 
 namespace FallowEarth.Construction
 {
