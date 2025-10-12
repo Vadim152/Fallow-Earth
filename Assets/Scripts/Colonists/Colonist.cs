@@ -65,11 +65,17 @@ public class Colonist : SaveableMonoBehaviour
 
         aiModule.Configure(rb, baseMoveSpeed);
 
-        if (GetComponent<SpriteRenderer>() == null)
+        var spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer == null)
         {
-            var sr = gameObject.AddComponent<SpriteRenderer>();
-            sr.sprite = CreateColoredSprite(Color.yellow);
+            spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
+            spriteRenderer.sprite = CreateColoredSprite(Color.yellow);
         }
+
+        // Ensure colonists render above the ground tilemaps. Without an explicit
+        // sorting order they end up behind the generated terrain a frame after
+        // spawning, making them appear to disappear.
+        spriteRenderer.sortingOrder = Mathf.Max(spriteRenderer.sortingOrder, 10);
 
         mentalBreak = false;
         breakTimer = 0f;
