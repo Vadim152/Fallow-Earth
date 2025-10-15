@@ -12,6 +12,8 @@ using UnityEngine;
 [RequireComponent(typeof(ColonistPersistence))]
 public class Colonist : SaveableMonoBehaviour
 {
+    private const int DefaultSortingOrder = 15;
+
     public float moveSpeed = 10f;
     private float baseMoveSpeed;
 
@@ -72,10 +74,10 @@ public class Colonist : SaveableMonoBehaviour
             spriteRenderer.sprite = CreateColoredSprite(Color.yellow);
         }
 
-        // Ensure colonists render above the ground tilemaps. Without an explicit
-        // sorting order they end up behind the generated terrain a frame after
-        // spawning, making them appear to disappear.
-        spriteRenderer.sortingOrder = Mathf.Max(spriteRenderer.sortingOrder, 10);
+        // Ensure colonists render above the ground and zone tilemaps. Without an
+        // explicit sorting order they end up behind the generated terrain a
+        // frame after spawning, making them appear to disappear.
+        spriteRenderer.sortingOrder = Mathf.Max(spriteRenderer.sortingOrder, DefaultSortingOrder);
 
         mentalBreak = false;
         breakTimer = 0f;
